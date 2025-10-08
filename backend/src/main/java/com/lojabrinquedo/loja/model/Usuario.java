@@ -1,5 +1,6 @@
 package com.lojabrinquedo.loja.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference; 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,6 +34,7 @@ public class Usuario {
     private Boolean administrador = false;
 
     // Relacionamento com Endereços
+    @JsonBackReference
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Endereco> enderecos;
     

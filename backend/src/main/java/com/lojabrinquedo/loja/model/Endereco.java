@@ -1,5 +1,6 @@
 package com.lojabrinquedo.loja.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference; 
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ public class Endereco {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;

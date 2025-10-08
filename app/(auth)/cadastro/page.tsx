@@ -6,25 +6,25 @@ import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { Blocks } from "lucide-react"; 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react'; // NOVO: Para gerenciar o estado do CPF
+import { useState } from 'react';
 
 // URL base da sua API do Spring Boot
 const API_URL = 'http://localhost:8080/api';
 
 export default function CadastroPage() {
   const router = useRouter();
-  const [cpfValue, setCpfValue] = useState(''); // NOVO ESTADO: Para CPF mascarado
+  const [cpfValue, setCpfValue] = useState(''); 
 
   // LÓGICA DE MÁSCARA E LIMITE DE CPF
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for dígito
+    let value = e.target.value.replace(/\D/g, ''); // 1. Remove tudo que não for dígito
     
-    // Limita a 11 caracteres (999.999.999-99)
+    // 2. Limita a 11 caracteres (999.999.999-99)
     if (value.length > 11) {
       value = value.substring(0, 11);
     }
 
-    // Aplica a máscara: XXX.XXX.XXX-XX
+    // 3. Aplica a máscara: XXX.XXX.XXX-XX
     if (value.length > 9) {
         value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
     } else if (value.length > 6) {
@@ -49,7 +49,7 @@ export default function CadastroPage() {
       nome: formData.get('nome'),
       email: formData.get('email'),
       cpf: cpfUnmasked, // ENVIA O CPF LIMPO
-      senha: formData.get('senha'),
+      senha: formData.get('senha'), 
       telefone: "", 
       administrador: false,
     };
@@ -67,8 +67,8 @@ export default function CadastroPage() {
             alert('✅ Cadastro realizado com sucesso! Faça login.');
             router.push('/login'); 
         } else {
+            // Se houver um erro (ex: CPF ou Email duplicado, status 400/500)
             const errorData = await response.json();
-            // Retorna o erro específico do Spring, como CPF/Email duplicado
             alert(`❌ Falha no cadastro: ${errorData.message || 'Dados inválidos ou duplicados (CPF/Email).'}`);
         }
     } catch (error) {
@@ -80,7 +80,7 @@ export default function CadastroPage() {
 
   return (
     // O layout pai centraliza este div
-    <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-6 border-t-8 border-blue-500"> 
+    <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-6 border-t-8 border-blue-500 transform hover:scale-105 transition-transform duration-300"> 
       <div className="text-center">
         <Blocks size={64} className="mx-auto text-blue-500 mb-4" />
         <h1 className="text-4xl font-extrabold text-gray-800">Vamos Brincar!</h1>
@@ -105,8 +105,10 @@ export default function CadastroPage() {
             type="text" 
             placeholder="000.000.000-00" 
             required 
-            value={cpfValue} // Liga o estado do CPF mascarado
-            onChange={handleCpfChange} // Chama a lógica de máscara
+            value={cpfValue} // Usa o valor mascarado
+            onChange={handleCpfChange} // Aplica a máscara ao digitar
+            inputMode="numeric" // Sugere teclado numérico em mobile
+            maxLength={14} // Limita o tamanho máximo com pontos
             className="mt-1 w-full border-blue-300 focus:border-blue-500 focus:ring-blue-500" 
           />
         </div>

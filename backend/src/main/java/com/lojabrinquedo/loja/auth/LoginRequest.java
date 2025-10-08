@@ -1,15 +1,15 @@
 package com.lojabrinquedo.loja.auth;
 
 import lombok.Data;
-import lombok.NoArgsConstructor; // Adicione esta linha (se não estiver lá)
+import lombok.NoArgsConstructor; 
 
 @Data
-@NoArgsConstructor // Adicione esta linha (para garantir construtor vazio)
+@NoArgsConstructor // Garante que o construtor vazio seja gerado
 public class LoginRequest {
     private String email;
     private String senha;
 
-    // MÉTODOS ADICIONADOS MANUALMENTE PARA CORRIGIR O ERRO DE COMPILAÇÃO:
+    // MÉTODOS ADICIONADOS MANUALMENTE (Workaround para o erro de compilação do Lombok)
     public String getEmail() {
         return email;
     }

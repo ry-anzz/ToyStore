@@ -21,27 +21,26 @@ public class AuthController {
     }
 
     /**
-     * POST /api/auth/login - Endpoint de login funcional.
-     * Verifica as credenciais e retorna o usuário se a senha estiver correta.
+     * POST /api/auth/login - Verifica as credenciais.
      */
     @PostMapping("/login")
     public ResponseEntity<Usuario> login(@RequestBody LoginRequest request) {
-        // 1. Busca o usuário pelo email
+        // 1. Busca o usuário pelo email (findByEmail é crucial e deve existir no UsuarioRepository)
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(request.getEmail());
 
         if (usuarioOpt.isEmpty()) {
-            // Lança 404 (Not Found) se o email não existir
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Email ou senha inválidos.");
+            // Lança 401 para não dar dicas sobre qual credencial falhou
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos.");
         }
 
         Usuario usuario = usuarioOpt.get();
 
-        // 2. Verifica a senha (em texto puro, sem criptografia)
+        // 2. Verifica a senha (em texto puro, pois removemos a criptografia)
         if (usuario.getSenha().equals(request.getSenha())) {
-            // Se as senhas baterem, retorna 200 OK e os dados do usuário
+            // Se as senhas baterem, retorna 200 OK e os dados do usuário (exceto a senha)
             return ResponseEntity.ok(usuario);
         } else {
-            // Lança 401 (Unauthorized) se a senha estiver incorreta
+            // Senha incorreta
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou senha inválidos.");
         }
     }

@@ -37,7 +37,7 @@ export interface Produto {
   nome: string;
   valor: number;
   descricao: string;
-  imagem_url: string;
+  imagens: string[]; 
   categoria: number;
   marca: number;
 }

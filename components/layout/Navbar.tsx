@@ -1,13 +1,15 @@
 // src/components/layout/Navbar.tsx
+// src/components/layout/Navbar.tsx
+"use client"; // Precisa ser um client component para usar hooks
+
 import Link from 'next/link';
 import { ShoppingCart, User, Blocks } from 'lucide-react';
 import { SearchBar } from './SearchBar';
+import { useCart } from '@/contexts/CartContext'; // 1. Importamos nosso hook
 
 export function Navbar() {
-  // No futuro, este número virá do estado do carrinho
-  const cartItemCount = 2;
-
-  return (
+  const { totalItens } = useCart(); // 2. Pegamos o total de itens do contexto
+return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Barra Principal */}
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -30,10 +32,10 @@ export function Navbar() {
           </Link>
           <Link href="/carrinho" className="relative flex items-center text-gray-700 hover:text-blue-600">
             <ShoppingCart className="w-6 h-6" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full">
-                {cartItemCount}
-              </span>
+            {totalItens > 0 && (
+            <span className="absolute -top-2 -right-2 flex items-center justify-center w-5 h-5 bg-red-500 text-white text-xs rounded-full">
+              {totalItens}
+            </span>
             )}
             <span className="ml-2 hidden lg:inline">Carrinho</span>
           </Link>

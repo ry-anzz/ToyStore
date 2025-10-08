@@ -1,24 +1,59 @@
+// src/components/products/ProductCard.tsx
+"use client";
+
 import Link from 'next/link';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Produto } from '@/types';
+import { useCart } from '@/contexts/CartContext';
+import { useFavorites } from '@/contexts/FavoritesContext'; // 1. IMPORTAMOS O CONTEXTO DE FAVORITOS
+import { Heart } from 'lucide-react';
 
-interface ProductCardProps {
-  product: Produto;
-}
+export function ProductCard({ product }: { product: Produto }) {
+  const { adicionarAoCarrinho } = useCart();
+  // 2. PEGAMOS AS FUNÇÕES E DADOS DO CONTEXTO DE FAVORITOS
+  const { toggleFavorito, isFavorito } = useFavorites();
 
-export function ProductCard({ product }: ProductCardProps) {
+  const isProductFavorite = isFavorito(product.id);
+
   return (
-    <Card>
+    // Adicionamos 'relative' para posicionar o coração
+    <Card className="flex flex-col justify-between relative group"> 
+      
+      {/* 3. BOTÃO DE FAVORITAR */}
+      <button
+        onClick={(e) => {
+          e.preventDefault(); // Impede que o clique no coração navegue para a página do produto
+          toggleFavorito(product.id);
+        }}
+        className="absolute top-2 right-2 z-10 p-2 bg-white/70 rounded-full hover:bg-white transition-all"
+        aria-label="Adicionar aos favoritos"
+      >
+        <Heart 
+          size={20} 
+          className={`transition-colors ${isProductFavorite ? 'text-red-500 fill-current' : 'text-gray-500'}`}
+        />
+      </button>
+
       <Link href={`/produto/${product.id}`}>
-        <img src={product.imagem_url} alt={product.nome} className="w-full h-48 object-cover" />
+        <img 
+          src={product.imagem_url} 
+          alt={product.nome} 
+          className="w-full h-48 object-cover cursor-pointer group-hover:opacity-80 transition-opacity" 
+        />
+        <div className="p-4">
+          <h3 className="font-semibold text-lg truncate">{product.nome}</h3>
+          <p className="text-gray-600 mt-1 text-xl font-bold">
+            {product.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+          </p>
+        </div>
       </Link>
-      <div className="p-4">
-        <h3 className="font-semibold text-lg">{product.nome}</h3>
-        <p className="text-gray-600 mt-1">
-          {product.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-        </p>
-        <Button className="w-full mt-4">
+      
+      <div className="p-4 pt-0">
+        <Button 
+          className="w-full"
+          onClick={() => adicionarAoCarrinho(product)}
+        >
           Adicionar ao Carrinho
         </Button>
       </div>

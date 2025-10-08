@@ -1,16 +1,17 @@
 // src/components/user/AccountSidebar.tsx
-
-"use client"; // Adicionamos isso pois usaremos hooks como o usePathname para saber a página ativa
+"use client"; 
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Home, Package, MapPin, LogOut } from "lucide-react";
+// 1. ADICIONE O ÍCONE DE CORAÇÃO
+import { User, Home, Package, MapPin, LogOut, Heart } from "lucide-react"; 
 
-// Lista de links do menu
+// 2. ADICIONE O NOVO LINK NA LISTA
 const navLinks = [
   { name: "Painel", href: "/conta", icon: Home },
   { name: "Meus Pedidos", href: "/conta/pedidos", icon: Package },
   { name: "Meus Endereços", href: "/conta/enderecos", icon: MapPin },
+  { name: "Meus Favoritos", href: "/conta/favoritos", icon: Heart }, // NOVO LINK
   { name: "Meus Dados", href: "/conta/dados", icon: User },
 ];
 

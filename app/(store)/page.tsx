@@ -87,7 +87,7 @@ export default function HomePage() {
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
-          ) : (
+          ) : ( 
             <div className="text-center py-16">
               <h2 className="text-2xl font-semibold">Nenhum produto encontrado.</h2>
               <p className="text-gray-500 mt-2">Tente ajustar sua busca ou filtros.</p>

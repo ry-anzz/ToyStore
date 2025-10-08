@@ -12,7 +12,7 @@ import java.util.List;
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Use Long para consistência e boas práticas
+    private Long id; 
 
     @Column(nullable = false, length = 100)
     private String nome;
@@ -39,4 +39,8 @@ public class Usuario {
     // Relacionamento com Carrinho
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CarrinhoItens> itensCarrinho;
+    
+    // MÉTODOS ADICIONADOS MANUALMENTE PARA CORRIGIR O ERRO DE COMPILAÇÃO:
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
 }

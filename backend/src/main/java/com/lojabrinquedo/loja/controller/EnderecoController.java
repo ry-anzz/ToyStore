@@ -1,37 +1,36 @@
 package com.lojabrinquedo.loja.controller;
 
 import com.lojabrinquedo.loja.model.Endereco;
+import com.lojabrinquedo.loja.model.Usuario;
 import com.lojabrinquedo.loja.repository.EnderecoRepository;
-import com.lojabrinquedo.loja.repository.UsuarioRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Map;
+import java.util.Optional; // 1. IMPORTAR OPTIONAL
 
 @RestController
 @RequestMapping("/api/enderecos")
 public class EnderecoController {
 
     private final EnderecoRepository enderecoRepository;
-    private final UsuarioRepository usuarioRepository;
 
-    public EnderecoController(EnderecoRepository enderecoRepository, UsuarioRepository usuarioRepository) {
+    public EnderecoController(EnderecoRepository enderecoRepository) {
         this.enderecoRepository = enderecoRepository;
-        this.usuarioRepository = usuarioRepository;
     }
 
-    // --- MÉTODO PARA ATUALIZAR UM ENDEREÇO ---
     @PutMapping("/{id}")
-    public ResponseEntity<Endereco> atualizarEndereco(@PathVariable Long id, @RequestBody Endereco dadosAtualizados) {
+    public ResponseEntity<Endereco> atualizarEndereco(@PathVariable Long id, @RequestBody Map<String, String> dadosAtualizados) {
         return enderecoRepository.findById(id)
                 .map(enderecoExistente -> {
-                    enderecoExistente.setApelido(dadosAtualizados.getApelido());
-                    enderecoExistente.setCep(dadosAtualizados.getCep());
-                    enderecoExistente.setRua(dadosAtualizados.getRua());
-                    enderecoExistente.setNumero(dadosAtualizados.getNumero());
-                    enderecoExistente.setBairro(dadosAtualizados.getBairro());
-                    enderecoExistente.setCidade(dadosAtualizados.getCidade());
-                    enderecoExistente.setUf(dadosAtualizados.getUf());
+                    enderecoExistente.setApelido(dadosAtualizados.get("apelido"));
+                    enderecoExistente.setCep(dadosAtualizados.get("cep"));
+                    enderecoExistente.setRua(dadosAtualizados.get("rua"));
+                    enderecoExistente.setNumero(dadosAtualizados.get("numero"));
+                    enderecoExistente.setBairro(dadosAtualizados.get("bairro"));
+                    enderecoExistente.setCidade(dadosAtualizados.get("cidade"));
+                    enderecoExistente.setUf(dadosAtualizados.get("uf"));
                     
                     Endereco enderecoSalvo = enderecoRepository.save(enderecoExistente);
                     return ResponseEntity.ok(enderecoSalvo);
@@ -39,13 +38,26 @@ public class EnderecoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // --- MÉTODO PARA DELETAR UM ENDEREÇO ---
+    // --- MÉTODO DE EXCLUSÃO CORRIGIDO ---
     @DeleteMapping("/{id}")
+    @Transactional
     public ResponseEntity<Void> deletarEndereco(@PathVariable Long id) {
-        if (!enderecoRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+        // 2. Buscamos o endereço primeiro
+        Optional<Endereco> enderecoOpt = enderecoRepository.findById(id);
+
+        // 3. Verificamos se ele existe
+        if (enderecoOpt.isEmpty()) {
+            return ResponseEntity.notFound().build(); // Se não existir, retorna 404 Not Found
         }
-        enderecoRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
+
+        // 4. Se existir, continuamos com a lógica de exclusão
+        Endereco endereco = enderecoOpt.get();
+        Usuario usuario = endereco.getUsuario();
+        if (usuario != null) {
+            usuario.getEnderecos().remove(endereco);
+        }
+        enderecoRepository.delete(endereco);
+
+        return ResponseEntity.noContent().build(); // Retorna 204 No Content (sucesso)
     }
 }

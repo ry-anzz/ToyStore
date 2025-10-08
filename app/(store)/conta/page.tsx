@@ -1,20 +1,35 @@
 // src/app/(store)/conta/page.tsx
-"use client"; 
+"use client";
 
-import { useAuth } from "@/contexts/AuthContext"; // 1. Importar o hook de autenticação
+import { useAuth } from "@/contexts/AuthContext";
 import { User, MapPin } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
-  // 2. Pegar os dados do usuário LOGADO a partir do contexto
   const { user } = useAuth();
 
-  // Se os dados do usuário ainda não foram carregados, exibe uma mensagem
+  // Nova função para formatar o número de telefone
+  const formatPhoneNumber = (phone: string | undefined) => {
+    if (!phone || phone.length < 10) {
+      return phone; // Retorna o número como está se for inválido
+    }
+    
+    // Extrai DDD e o restante do número
+    const ddd = phone.substring(0, 2);
+    const number = phone.substring(2);
+
+    // Formata para (XX) XXXXX-XXXX ou (XX) XXXX-XXXX
+    if (number.length === 9) {
+      return `(${ddd}) ${number.substring(0, 5)}-${number.substring(5)}`;
+    } else {
+      return `(${ddd}) ${number.substring(0, 4)}-${number.substring(4)}`;
+    }
+  };
+
   if (!user) {
     return <div>Carregando dados da conta...</div>;
   }
 
-  // Se os dados já carregaram, exibe o painel
   return (
     <div>
       <h2 className="text-2xl font-semibold mb-4">Olá, {user.nome}!</h2>
@@ -24,7 +39,7 @@ export default function AccountPage() {
       </p>
 
       <div className="grid md:grid-cols-2 gap-8">
-        {/* Card de Dados Pessoais com dados DINÂMICOS */}
+        {/* Card de Dados Pessoais */}
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold flex items-center gap-2"><User /> Meus Dados</h3>
@@ -33,11 +48,12 @@ export default function AccountPage() {
           <div className="space-y-2 text-gray-700">
             <p><span className="font-semibold">Nome:</span> {user.nome}</p>
             <p><span className="font-semibold">Email:</span> {user.email}</p>
-            <p><span className="font-semibold">Telefone:</span> {user.telefone}</p>
+            {/* Telefone agora é formatado */}
+            <p><span className="font-semibold">Telefone:</span> {formatPhoneNumber(user.telefone)}</p>
           </div>
         </div>
 
-        {/* Card de Endereços com dados DINÂMICOS */}
+        {/* Card de Endereços */}
         <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
            <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold flex items-center gap-2"><MapPin /> Meus Endereços</h3>

@@ -18,10 +18,9 @@ export default function UserDataPage() {
     nome: '', email: '', cpf: '', ddd: '', telefone: '',
   });
 
-  // Efeito para preencher o formulário quando os dados do usuário estiverem disponíveis
-  useEffect(() => {
+  // Função para popular o formulário com os dados originais do usuário
+  const populateForm = () => {
     if (user) {
-      // Separa o DDD do restante do telefone
       const ddd = user.telefone?.substring(0, 2) || '';
       const telefone = user.telefone?.substring(2) || '';
       
@@ -33,28 +32,56 @@ export default function UserDataPage() {
         telefone: telefone,
       });
     }
-  }, [user]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [id]: value }));
   };
 
-  // Nova função para salvar as alterações
+  useEffect(() => {
+    populateForm();
+  }, [user]);
+
+  // Função para aplicar máscaras e limites enquanto o usuário digita
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    let maskedValue = value;
+
+    if (id === 'ddd') {
+      maskedValue = value.replace(/\D/g, '').substring(0, 2);
+    } else if (id === 'telefone') {
+      let v = value.replace(/\D/g, '').substring(0, 9);
+      if (v.length > 5) v = v.replace(/(\d{5})(\d{4})/, '$1-$2');
+      else if (v.length > 4) v = v.replace(/(\d{4})(\d{0,4})/, '$1-$2');
+      if (v.endsWith('-')) v = v.slice(0, -1);
+      maskedValue = v;
+    }
+
+    setFormData((prevData) => ({ ...prevData, [id]: maskedValue }));
+  };
+
+  // Função para o botão "Cancelar"
+  const handleCancel = () => {
+    populateForm(); // Repopula o formulário com os dados originais
+    setIsEditing(false); // Sai do modo de edição
+  };
+
   const handleSaveChanges = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    
+    // Prepara os dados para enviar (sem máscaras)
+    const dataToSave = {
+      ...formData,
+      telefone: formData.telefone.replace(/\D/g, '') // Remove o hífen do telefone
+    };
 
     try {
       const response = await fetch(`${API_URL}/usuarios/${user.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSave),
       });
 
       if (response.ok) {
         const updatedUserData = await response.json();
-        updateUser(updatedUserData); // Atualiza o contexto global
+        updateUser(updatedUserData);
         setIsEditing(false);
         setPopup({ show: true, type: 'success', message: 'Dados atualizados com sucesso!' });
       } else {
@@ -74,38 +101,24 @@ export default function UserDataPage() {
       {popup.show && <Popup type={popup.type} message={popup.message} onClose={() => setPopup({ ...popup, show: false })} />}
       <div>
         <h2 className="text-2xl font-semibold mb-6">Meus Dados Pessoais</h2>
-
         <form onSubmit={handleSaveChanges} className="space-y-6">
-          <div>
-            <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome Completo</label>
-            <Input id="nome" type="text" value={formData.nome} onChange={handleInputChange} disabled={!isEditing} className="mt-1 w-full" />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">E-mail</label>
-            <Input id="email" type="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} className="mt-1 w-full" />
-          </div>
-          <div>
-            <label htmlFor="cpf" className="block text-sm font-medium text-gray-700">CPF</label>
-            <Input id="cpf" type="text" value={formData.cpf} disabled className="mt-1 w-full bg-gray-100 cursor-not-allowed" />
-            <p className="text-xs text-gray-500 mt-1">O CPF não pode ser alterado.</p>
-          </div>
-
-          {/* LAYOUT CORRIGIDO PARA DDD E TELEFONE */}
+          <Input id="nome" type="text" value={formData.nome} disabled className="w-full bg-gray-100 cursor-not-allowed" />
+          <Input id="email" type="email" value={formData.email} onChange={handleInputChange} disabled={!isEditing} className="w-full" />
+          <Input id="cpf" type="text" value={formData.cpf} disabled className="w-full bg-gray-100 cursor-not-allowed" />
           <div className="flex gap-4">
             <div className="w-1/4">
-              <label htmlFor="ddd" className="block text-sm font-medium text-gray-700">DDD</label>
-              <Input id="ddd" type="text" value={formData.ddd} onChange={handleInputChange} disabled={!isEditing} className="mt-1 w-full" maxLength={2} />
+              <label htmlFor="ddd">DDD</label>
+              <Input id="ddd" type="text" value={formData.ddd} onChange={handleInputChange} disabled={!isEditing} className="w-full" />
             </div>
             <div className="w-3/4">
-              <label htmlFor="telefone" className="block text-sm font-medium text-gray-700">Telefone</label>
-              <Input id="telefone" type="text" value={formData.telefone} onChange={handleInputChange} disabled={!isEditing} className="mt-1 w-full" />
+              <label htmlFor="telefone">Telefone</label>
+              <Input id="telefone" type="text" value={formData.telefone} onChange={handleInputChange} disabled={!isEditing} className="w-full" />
             </div>
           </div>
-          
           <div className="flex justify-end gap-3 pt-4 border-t">
             {isEditing ? (
               <>
-                <Button type="button" onClick={() => setIsEditing(false)} className="bg-gray-600 hover:bg-gray-700">Cancelar</Button>
+                <Button type="button" onClick={handleCancel} className="bg-gray-600 hover:bg-gray-700">Cancelar</Button>
                 <Button type="submit">Salvar Alterações</Button>
               </>
             ) : (

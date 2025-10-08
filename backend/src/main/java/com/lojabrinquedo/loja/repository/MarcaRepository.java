@@ -1,7 +1,7 @@
 package com.lojabrinquedo.loja.repository;
 
-import com.lojabrinquedo.loja.model.Produto;
+import com.lojabrinquedo.loja.model.Marca;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MarcaRepository extends JpaRepository<Produto, Long> {
+public interface MarcaRepository extends JpaRepository<Marca, Long> {
 }

@@ -11,7 +11,20 @@ import { useRouter } from 'next/navigation';
 export function Navbar() {
   const router = useRouter();
   const { totalItens } = useCart();
-  const { isAuthenticated } = useAuth(); // Não precisamos mais da função logout aqui
+  // 1. Pegar o objeto 'user' completo do contexto
+  const { isAuthenticated, user } = useAuth(); 
+
+  // 2. Lógica para extrair o primeiro e o último nome
+  const getDisplayName = () => {
+    if (!user || !user.nome) {
+      return "Minha Conta";
+    }
+    const nameParts = user.nome.trim().split(' ');
+    if (nameParts.length > 1) {
+      return `${nameParts[0]} ${nameParts[nameParts.length - 1]}`;
+    }
+    return user.nome; // Retorna o nome completo se for uma palavra só
+  };
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -27,13 +40,12 @@ export function Navbar() {
 
         <div className="flex items-center space-x-6">
           {isAuthenticated ? (
-            // Se estiver logado, mostra apenas "Minha Conta"
+            // 3. O link para a conta agora mostra o nome do usuário
             <Link href="/conta" className="flex items-center text-gray-700 hover:text-blue-600">
               <User className="w-6 h-6" />
-              <span className="ml-2 hidden lg:inline">Minha Conta</span>
+              <span className="ml-2 hidden lg:inline">{getDisplayName()}</span>
             </Link>
           ) : (
-            // Se não, mostra "Fazer Login"
             <Link href="/login" className="flex items-center text-gray-700 hover:text-blue-600">
               <User className="w-6 h-6" />
               <span className="ml-2 hidden lg:inline">Fazer Login</span>

@@ -1,44 +1,60 @@
 package com.lojabrinquedo.loja.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference; 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.NoArgsConstructor; // Mantenha este
 
 @Entity
 @Table(name = "endereco")
-@Data
-@NoArgsConstructor
+@NoArgsConstructor // Mantenha o construtor vazio
 public class Endereco {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @Column(nullable = false, length = 100)
     private String rua;
-
-    @Column(nullable = false, length = 10)
     private String numero;
-
-    @Column(nullable = false, length = 100)
     private String bairro;
-
-    @Column(nullable = false, length = 100)
     private String cidade;
-
-    @Column(nullable = false, length = 2)
     private String uf;
-
-    @Column(nullable = false, length = 9)
     private String cep;
-
-    @Column(name = "nome_destinatario", length = 100)
     private String nomeDestinatario;
-    
-    // Adicionando um campo 'apelido' que faz sentido com o seu frontend (AddressForm.tsx)
     private String apelido;
+
+    // --- GETTERS E SETTERS MANUAIS ---
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+
+    public String getRua() { return rua; }
+    public void setRua(String rua) { this.rua = rua; }
+
+    public String getNumero() { return numero; }
+    public void setNumero(String numero) { this.numero = numero; }
+
+    public String getBairro() { return bairro; }
+    public void setBairro(String bairro) { this.bairro = bairro; }
+
+    public String getCidade() { return cidade; }
+    public void setCidade(String cidade) { this.cidade = cidade; }
+
+    public String getUf() { return uf; }
+    public void setUf(String uf) { this.uf = uf; }
+
+    public String getCep() { return cep; }
+    public void setCep(String cep) { this.cep = cep; }
+
+    public String getNomeDestinatario() { return nomeDestinatario; }
+    public void setNomeDestinatario(String nomeDestinatario) { this.nomeDestinatario = nomeDestinatario; }
+
+    public String getApelido() { return apelido; }
+    public void setApelido(String apelido) { this.apelido = apelido; }
 }

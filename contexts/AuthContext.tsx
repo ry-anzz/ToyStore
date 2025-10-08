@@ -2,21 +2,24 @@
 "use client";
 
 import { createContext, ReactNode, useContext, useState, useEffect } from "react";
-import { Usuario } from "@/types"; // Importamos o tipo Usuario
+import { Usuario, Endereco } from "@/types";
 
-// Interface atualizada para incluir os dados do usuário
 interface IAuthContext {
   isAuthenticated: boolean;
-  user: Usuario | null; // Adicionamos o estado do usuário
-  login: (userData: Usuario) => void; // A função login agora recebe o objeto completo do usuário
+  user: Usuario | null;
+  login: (userData: Usuario) => void;
   logout: () => void;
+  updateUser: (updatedData: Usuario) => void;
+  updateUserAddresses: (newAddresses: Endereco[]) => void; // 1. NOVA FUNÇÃO
 }
 
 export const AuthContext = createContext<IAuthContext>({
   isAuthenticated: false,
-  user: null, // Valor inicial nulo
+  user: null,
   login: () => {},
   logout: () => {},
+  updateUser: () => {},
+  updateUserAddresses: () => {}, // 2. VALOR PADRÃO
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -24,13 +27,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Agora, verificamos o objeto do usuário no localStorage
     const userString = localStorage.getItem('user_data');
     if (userString) {
       try {
         setUser(JSON.parse(userString));
       } catch (error) {
-        console.error("Falha ao ler dados do usuário do localStorage", error);
         localStorage.removeItem('user_data');
       }
     }
@@ -38,30 +39,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (userData: Usuario) => {
-    // Salvamos o objeto do usuário como string no localStorage
     localStorage.setItem('user_data', JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = () => {
-    // Removemos os dados do usuário do localStorage
     localStorage.removeItem('user_data');
     setUser(null);
   };
   
+  const updateUser = (updatedData: Usuario) => {
+    setUser(updatedData);
+    localStorage.setItem('user_data', JSON.stringify(updatedData));
+  };
+
+  // 3. IMPLEMENTAÇÃO DA FUNÇÃO
+  const updateUserAddresses = (newAddresses: Endereco[]) => {
+    if (user) {
+      const updatedUser = { ...user, enderecos: newAddresses };
+      setUser(updatedUser);
+      localStorage.setItem('user_data', JSON.stringify(updatedUser));
+    }
+  };
+  
   const isAuthenticated = !!user;
 
-  if (isLoading) {
-    return null; 
-  }
+  if (isLoading) return null; 
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, updateUserAddresses }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

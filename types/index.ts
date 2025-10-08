@@ -22,9 +22,9 @@ export interface Produto {
 }
 
 export interface Endereco {
-  id: number;
-  usuario_id?: number; // Opcional pois o backend não envia de volta
-  apelido?: string; // Opcional pois pode ser nulo
+  id?: number; // ALTERAÇÃO AQUI: 'id' agora é opcional
+  usuario_id?: number;
+  apelido?: string;
   nome?: string;
   rua: string;
   bairro: string;
@@ -43,8 +43,7 @@ export interface Usuario {
   telefone: string;
   ddd?: string;
   administrador: boolean;
-  // --- LINHA ADICIONADA ABAIXO ---
-  enderecos?: Endereco[]; // Adiciona a lista de endereços (opcional)
+  enderecos?: Endereco[];
 }
 
 export interface Avaliacao {

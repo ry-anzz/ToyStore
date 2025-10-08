@@ -1,3 +1,4 @@
+// src/main/java/com/lojabrinquedo/loja/controller/UsuarioController.java
 package com.lojabrinquedo.loja.controller;
 
 import com.lojabrinquedo.loja.model.Endereco;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map; // 1. IMPORT NECESSÁRIO
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -30,18 +32,37 @@ public class UsuarioController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "O CPF ou E-mail fornecido já está cadastrado.");
         }
 
-        // --- LÓGICA ATUALIZADA ---
         if (usuario.getEnderecos() != null && !usuario.getEnderecos().isEmpty()) {
             for (Endereco endereco : usuario.getEnderecos()) {
-                // 1. Associa o endereço ao usuário que está sendo criado
                 endereco.setUsuario(usuario);
-                
-                // 2. Define o nome do destinatário como o nome do usuário
                 endereco.setNomeDestinatario(usuario.getNome());
             }
         }
 
         Usuario novoUsuario = usuarioRepository.save(usuario);
         return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
+    }
+
+    // --- MÉTODO DE ATUALIZAÇÃO CORRIGIDO ---
+    @PutMapping("/{id}")
+    public ResponseEntity<Usuario> atualizarUsuario(@PathVariable Long id, @RequestBody Map<String, String> dadosAtualizados) {
+        return usuarioRepository.findById(id)
+                .map(usuarioExistente -> {
+                    // Atualiza os campos pegando os valores do Map
+                    usuarioExistente.setNome(dadosAtualizados.get("nome"));
+                    usuarioExistente.setEmail(dadosAtualizados.get("email"));
+                    
+                    // Concatena DDD e Telefone recebidos do Map
+                    String ddd = dadosAtualizados.get("ddd");
+                    String telefone = dadosAtualizados.get("telefone");
+                    String telefoneCompleto = (ddd != null ? ddd : "") + (telefone != null ? telefone : "");
+                    
+                    // Salva o número completo e limpo no campo 'telefone'
+                    usuarioExistente.setTelefone(telefoneCompleto.replaceAll("\\D", ""));
+
+                    Usuario usuarioSalvo = usuarioRepository.save(usuarioExistente);
+                    return ResponseEntity.ok(usuarioSalvo);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

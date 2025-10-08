@@ -1,15 +1,17 @@
 // src/components/layout/Navbar.tsx
-// src/components/layout/Navbar.tsx
-"use client"; // Precisa ser um client component para usar hooks
+"use client"; 
 
 import Link from 'next/link';
-import { ShoppingCart, User, Blocks } from 'lucide-react';
+import { ShoppingCart, User, Blocks, LogOut } from 'lucide-react'; 
 import { SearchBar } from './SearchBar';
-import { useCart } from '@/contexts/CartContext'; // 1. Importamos nosso hook
+import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext'; // IMPORTADO
 
 export function Navbar() {
-  const { totalItens } = useCart(); // 2. Pegamos o total de itens do contexto
-return (
+  const { totalItens } = useCart();
+  const { isAuthenticated, logout } = useAuth(); // ESTADO E FUNÇÃO DO CONTEXTO
+
+  return (
     <header className="bg-white shadow-md sticky top-0 z-50">
       {/* Barra Principal */}
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -24,12 +26,32 @@ return (
           <SearchBar />
         </div>
 
-        {/* Ícones de Ação */}
+        {/* Ícones de Ação - LÓGICA DE AUTENTICAÇÃO */}
         <div className="flex items-center space-x-6">
-          <Link href="/conta" className="flex items-center text-gray-700 hover:text-blue-600">
-            <User className="w-6 h-6" />
-            <span className="ml-2 hidden lg:inline">Minha Conta</span>
-          </Link>
+          {isAuthenticated ? (
+            // Opções para usuário LOGADO
+            <>
+              <Link href="/conta" className="flex items-center text-gray-700 hover:text-blue-600">
+                <User className="w-6 h-6" />
+                <span className="ml-2 hidden lg:inline">Minha Conta</span>
+              </Link>
+              <button 
+                  onClick={logout} // Chama a função de logout do contexto
+                  className="flex items-center text-gray-700 hover:text-red-500 transition-colors"
+              >
+                  <LogOut className="w-6 h-6" />
+                  <span className="ml-2 hidden lg:inline">Sair</span>
+              </button>
+            </>
+          ) : (
+            // Opções para usuário DESLOGADO
+            <Link href="/login" className="flex items-center text-gray-700 hover:text-blue-600">
+              <User className="w-6 h-6" />
+              <span className="ml-2 hidden lg:inline">Fazer Login</span>
+            </Link>
+          )}
+          
+          {/* Carrinho (visível para ambos, mas com contagem real) */}
           <Link href="/carrinho" className="relative flex items-center text-gray-700 hover:text-blue-600">
             <ShoppingCart className="w-6 h-6" />
             {totalItens > 0 && (
@@ -41,7 +63,7 @@ return (
           </Link>
         </div>
       </div>
-      {/* Barra de Categorias */}
+      {/* Barra de Categorias (inalterado) */}
       <div className="bg-blue-600 text-white">
         <nav className="container mx-auto px-6 py-2 flex justify-center gap-6 font-semibold">
           <Link href="/?category=lego" className="hover:underline">Blocos de Montar</Link>

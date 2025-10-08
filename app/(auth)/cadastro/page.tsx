@@ -6,30 +6,55 @@ import { Input } from "@/components/ui/Input";
 import Link from "next/link";
 import { Blocks } from "lucide-react"; 
 import { useRouter } from 'next/navigation';
+import { useState } from 'react'; // NOVO: Para gerenciar o estado do CPF
 
 // URL base da sua API do Spring Boot
-const API_URL = 'http://localhost:8080/api'; 
+const API_URL = 'http://localhost:8080/api';
 
 export default function CadastroPage() {
   const router = useRouter();
+  const [cpfValue, setCpfValue] = useState(''); // NOVO ESTADO: Para CPF mascarado
+
+  // LÓGICA DE MÁSCARA E LIMITE DE CPF
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for dígito
+    
+    // Limita a 11 caracteres (999.999.999-99)
+    if (value.length > 11) {
+      value = value.substring(0, 11);
+    }
+
+    // Aplica a máscara: XXX.XXX.XXX-XX
+    if (value.length > 9) {
+        value = value.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+    } else if (value.length > 6) {
+        value = value.replace(/^(\d{3})(\d{3})(\d{3})$/, '$1.$2.$3');
+    } else if (value.length > 3) {
+        value = value.replace(/^(\d{3})(\d{3})$/, '$1.$2');
+    } else if (value.length > 0) {
+        value = value.replace(/^(\d{3})$/, '$1');
+    }
+
+    setCpfValue(value);
+  };
 
   const handleCadastro = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     
-    // 1. Coleta dos dados do formulário
+    // O CPF enviado para a API deve estar SEM PONTOS/TRAÇOS
+    const cpfUnmasked = (formData.get('cpf') as string).replace(/\D/g, ''); 
+
     const userData = {
       nome: formData.get('nome'),
       email: formData.get('email'),
-      cpf: formData.get('cpf'),
+      cpf: cpfUnmasked, // ENVIA O CPF LIMPO
       senha: formData.get('senha'),
-      // Telefone é configurado como opcional no seu model, setamos como vazio:
       telefone: "", 
       administrador: false,
     };
 
     try {
-        // 2. CHAMADA POST para o endpoint de criação de usuário no Spring Boot
         const response = await fetch(`${API_URL}/usuarios`, {
             method: 'POST',
             headers: {
@@ -40,22 +65,22 @@ export default function CadastroPage() {
 
         if (response.ok) {
             alert('✅ Cadastro realizado com sucesso! Faça login.');
-            router.push('/login'); // Redireciona para o login
+            router.push('/login'); 
         } else {
-            // Se houver um erro (ex: CPF ou Email duplicado)
             const errorData = await response.json();
+            // Retorna o erro específico do Spring, como CPF/Email duplicado
             alert(`❌ Falha no cadastro: ${errorData.message || 'Dados inválidos ou duplicados (CPF/Email).'}`);
         }
     } catch (error) {
         console.error('Erro de rede:', error);
-        alert('❌ Erro ao conectar com o servidor. Verifique se o Spring Boot está ativo.');
+        alert('❌ Erro de conexão. Verifique se o Spring Boot está ativo.');
     }
   };
 
 
   return (
-    // ESTILO GARANTE A CENTRALIZAÇÃO COM O LAYOUT PAI (AuthLayout)
-    <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-6 border-t-8 border-blue-500 transform hover:scale-105 transition-transform duration-300"> 
+    // O layout pai centraliza este div
+    <div className="w-full max-w-md bg-white rounded-3xl shadow-xl p-8 space-y-6 border-t-8 border-blue-500"> 
       <div className="text-center">
         <Blocks size={64} className="mx-auto text-blue-500 mb-4" />
         <h1 className="text-4xl font-extrabold text-gray-800">Vamos Brincar!</h1>
@@ -73,7 +98,17 @@ export default function CadastroPage() {
         </div>
         <div>
           <label htmlFor="cpf" className="block text-sm font-semibold text-gray-700">CPF</label>
-          <Input id="cpf" name="cpf" type="text" placeholder="000.000.000-00" required className="mt-1 w-full border-blue-300 focus:border-blue-500 focus:ring-blue-500" />
+          {/* APLICAÇÃO DA MÁSCARA */}
+          <Input 
+            id="cpf" 
+            name="cpf" 
+            type="text" 
+            placeholder="000.000.000-00" 
+            required 
+            value={cpfValue} // Liga o estado do CPF mascarado
+            onChange={handleCpfChange} // Chama a lógica de máscara
+            className="mt-1 w-full border-blue-300 focus:border-blue-500 focus:ring-blue-500" 
+          />
         </div>
         <div>
           <label htmlFor="senha" className="block text-sm font-semibold text-gray-700">Senha</label>

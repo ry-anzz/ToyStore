@@ -2,26 +2,16 @@
 "use client"; 
 
 import Link from 'next/link';
-import { ShoppingCart, User, Blocks, LogOut } from 'lucide-react'; 
+import { ShoppingCart, User, Blocks } from 'lucide-react'; 
 import { SearchBar } from './SearchBar';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation'; // 1. Importar o useRouter
+import { useRouter } from 'next/navigation';
 
 export function Navbar() {
-  const router = useRouter(); // 2. Iniciar o router
+  const router = useRouter();
   const { totalItens } = useCart();
-  const { isAuthenticated, logout } = useAuth();
-
-  // 3. Nova função para lidar com o logout
-  const handleLogout = () => {
-    // Adiciona uma confirmação
-    if (window.confirm("Você tem certeza que deseja sair da sua conta?")) {
-      logout();
-      // Redireciona para a home com um parâmetro para mostrar o pop-up
-      router.push('/?logout=true');
-    }
-  };
+  const { isAuthenticated } = useAuth(); // Não precisamos mais da função logout aqui
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -37,21 +27,13 @@ export function Navbar() {
 
         <div className="flex items-center space-x-6">
           {isAuthenticated ? (
-            <>
-              <Link href="/conta" className="flex items-center text-gray-700 hover:text-blue-600">
-                <User className="w-6 h-6" />
-                <span className="ml-2 hidden lg:inline">Minha Conta</span>
-              </Link>
-              {/* 4. O botão agora chama a nova função */}
-              <button 
-                  onClick={handleLogout}
-                  className="flex items-center text-gray-700 hover:text-red-500 transition-colors"
-              >
-                  <LogOut className="w-6 h-6" />
-                  <span className="ml-2 hidden lg:inline">Sair</span>
-              </button>
-            </>
+            // Se estiver logado, mostra apenas "Minha Conta"
+            <Link href="/conta" className="flex items-center text-gray-700 hover:text-blue-600">
+              <User className="w-6 h-6" />
+              <span className="ml-2 hidden lg:inline">Minha Conta</span>
+            </Link>
           ) : (
+            // Se não, mostra "Fazer Login"
             <Link href="/login" className="flex items-center text-gray-700 hover:text-blue-600">
               <User className="w-6 h-6" />
               <span className="ml-2 hidden lg:inline">Fazer Login</span>

@@ -20,11 +20,7 @@ export default function LoginPage() {
     const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        
-        const credentials = {
-            email: formData.get('email'),
-            senha: formData.get('senha'),
-        };
+        const credentials = { email: formData.get('email'), senha: formData.get('senha') };
 
         try {
             const response = await fetch(`${API_URL}/auth/login`, {
@@ -34,12 +30,12 @@ export default function LoginPage() {
             });
 
             if (response.ok) {
-                const authData = await response.json(); 
-                login(credentials.email as string, authData.token || "token_simulado"); 
+                const userData = await response.json(); 
+                
+                // ALTERAÇÃO: Passamos o objeto 'userData' completo para a função login
+                login(userData); 
                 
                 setPopup({ show: true, type: 'success', message: 'Login bem-sucedido! Bem-vindo(a) de volta.' });
-                
-                // MUDANÇA AQUI: Redireciona para a página principal
                 setTimeout(() => router.push('/'), 2000);
             } else {
                 setPopup({ show: true, type: 'error', message: 'Credenciais inválidas. Verifique seu e-mail e senha.' });

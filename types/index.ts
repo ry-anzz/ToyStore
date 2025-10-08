@@ -1,6 +1,5 @@
 // src/types/index.ts
 
-// Tipos baseados nas Entidades JPA
 export interface Marca {
   id: number;
   nome: string;
@@ -16,18 +15,24 @@ export interface Produto {
   nome: string;
   valor: number;
   descricao: string;
-<<<<<<< HEAD
-  imagens: string[]; 
-  categoria: number;
-  marca: number;
-=======
-  imagemUrl: string; // Corrigido para camelCase
-  quantidadeEstoque: number; // Corrigido para camelCase
-  
-  // No frontend, a API pode retornar os objetos completos ou apenas IDs
-  // Vamos assumir que a API retorna os objetos completos para o GET by ID
-  marca?: Marca; 
-  categoria?: Categoria; 
+  imagem_url: string;
+  quantidadeEstoque?: number;
+  marca?: Marca | number;
+  categoria?: Categoria | number;
+}
+
+export interface Endereco {
+  id: number;
+  usuario_id?: number; // Opcional pois o backend não envia de volta
+  apelido?: string; // Opcional pois pode ser nulo
+  nome?: string;
+  rua: string;
+  bairro: string;
+  uf: string;
+  cidade: string;
+  numero: string;
+  cep: string;
+  nomeDestinatario?: string;
 }
 
 export interface Usuario {
@@ -36,34 +41,23 @@ export interface Usuario {
   email: string;
   cpf: string;
   telefone: string;
+  ddd?: string;
   administrador: boolean;
-}
-
-export interface Endereco {
-  id: number;
-  usuarioId: number; // Corrigido para camelCase
-  rua: string;
-  bairro: string;
-  uf: string;
-  cidade: string;
-  numero: string;
-  cep: string;
-  nomeDestinatario?: string; // Corrigido para camelCase (opcional)
-  apelido?: string; // Adicionado do Endereco.java criado acima
->>>>>>> 71f42784fb279e2498688715aa62e167f0637673
+  // --- LINHA ADICIONADA ABAIXO ---
+  enderecos?: Endereco[]; // Adiciona a lista de endereços (opcional)
 }
 
 export interface Avaliacao {
-    id: number;
-    usuarioId: number; // Corrigido para camelCase
-    produtoId: number; // Corrigido para camelCase
-    descricao: string;
-    dataAvaliacao: string; // Corrigido para camelCase
-    nota: 1 | 2 | 3 | 4 | 5;
+  id: number;
+  usuarioId: number;
+  produtoId: number;
+  descricao: string;
+  dataAvaliacao: string;
+  nota: 1 | 2 | 3 | 4 | 5;
 }
 
 export interface ItemCarrinho {
-    id: number;
-    produto: Produto;
-    quantidade: number;
+  id: number;
+  produto: Produto;
+  quantidade: number;
 }

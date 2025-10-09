@@ -33,7 +33,6 @@ export default function OrderDetailsPage() {
         if (response.ok) {
           setPedido(await response.json());
         } else {
-          // Se o pedido não for encontrado, redireciona para a página de pedidos
           router.push('/conta/pedidos');
         }
       } catch (error) {
@@ -63,6 +62,11 @@ export default function OrderDetailsPage() {
 
   const subtotal = pedido.itens.reduce((acc, item) => acc + item.precoUnitario * item.quantidade, 0);
 
+  // ALTERAÇÃO AQUI: Trocado para toLocaleString para incluir o horário
+  const formattedDate = new Date(pedido.dataPedido).toLocaleString('pt-BR', {
+    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+
   return (
     <div>
       <Link href="/conta/pedidos" className="flex items-center gap-2 text-blue-600 hover:underline mb-6 font-semibold">
@@ -71,12 +75,12 @@ export default function OrderDetailsPage() {
       </Link>
       
       <div className="bg-white p-6 rounded-lg shadow-md">
-        {/* Cabeçalho do Pedido */}
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-4 border-b">
           <div>
             <h1 className="text-2xl font-bold">Detalhes do Pedido #{pedido.id.toString().padStart(6, '0')}</h1>
+            {/* ALTERAÇÃO AQUI: Adicionado "às" para melhor formatação */}
             <p className="text-sm text-gray-500">
-              Realizado em: {new Date(pedido.dataPedido).toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+              Realizado em: {formattedDate.replace(' ', ' às ')}h
             </p>
           </div>
           <span className={`px-3 py-1 text-sm font-semibold rounded-full ${statusColors[pedido.statusPedido.nome] || 'bg-gray-100'}`}>
@@ -84,9 +88,7 @@ export default function OrderDetailsPage() {
           </span>
         </div>
 
-        {/* Grid de Detalhes */}
         <div className="grid md:grid-cols-2 gap-8 mt-6">
-          {/* Coluna da Esquerda: Itens e Endereço */}
           <div className="space-y-6">
             <div>
               <h2 className="text-lg font-semibold mb-3">Itens do Pedido</h2>
@@ -121,7 +123,6 @@ export default function OrderDetailsPage() {
             </div>
           </div>
           
-          {/* Coluna da Direita: Resumo Financeiro */}
           <div className="bg-gray-50 p-6 rounded-lg self-start">
             <h2 className="text-lg font-semibold mb-4 border-b pb-2">Resumo Financeiro</h2>
             <div className="space-y-2">

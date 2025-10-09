@@ -53,7 +53,6 @@ export default function AdminPedidosPage() {
 
             if (!response.ok) throw new Error("Falha ao atualizar o status.");
 
-            // Atualiza o estado local para refletir a mudança imediatamente
             setPedidos(prevPedidos =>
                 prevPedidos.map(p =>
                     p.id === pedidoId
@@ -106,7 +105,8 @@ export default function AdminPedidosPage() {
                                     <tr key={pedido.id}>
                                         <td className="px-6 py-4 font-medium">#{pedido.id.toString().padStart(6, '0')}</td>
                                         <td className="px-6 py-4">{pedido.usuario.nome}</td>
-                                        <td className="px-6 py-4">{new Date(pedido.dataPedido).toLocaleDateString('pt-BR')}</td>
+                                        {/* ALTERAÇÃO AQUI: Trocado para toLocaleString */}
+                                        <td className="px-6 py-4">{new Date(pedido.dataPedido).toLocaleString('pt-BR')}</td>
                                         <td className="px-6 py-4">{pedido.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</td>
                                         <td className="px-6 py-4">
                                             <select

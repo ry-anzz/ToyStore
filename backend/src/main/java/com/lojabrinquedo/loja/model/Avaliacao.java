@@ -9,40 +9,36 @@ import java.time.LocalDate;
 @Table(name = "avaliacao")
 @Data 
 @NoArgsConstructor
-public class Avaliacao {
+public class Avaliacao { // NOME DA CLASSE CORRIGIDO
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
 
     @ManyToOne @JoinColumn(name = "usuario_id", nullable = false) private Usuario usuario;
     @ManyToOne @JoinColumn(name = "produto_id", nullable = false) private Produto produto;
 
-    @Column(nullable = false) private Integer nota; // TINYINT (1-5)
+    @Column(nullable = false) private Integer nota;
 
     @Column(length = 700) private String descricao;
 
     @Column(name = "data_avaliacao") private LocalDate dataAvaliacao;
+    
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean editado = false;
 
-    // --- MÉTODOS GETTERS ADICIONADOS MANUALMENTE ---
-    public Long getId() {
-        return id;
-    }
+    // --- Getters ---
+    public Long getId() { return id; }
+    public Usuario getUsuario() { return usuario; }
+    public Produto getProduto() { return produto; }
+    public Integer getNota() { return nota; }
+    public String getDescricao() { return descricao; }
+    public LocalDate getDataAvaliacao() { return dataAvaliacao; }
+    public boolean isEditado() { return editado; }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public Produto getProduto() {
-        return produto;
-    }
-
-    public Integer getNota() {
-        return nota;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public LocalDate getDataAvaliacao() {
-        return dataAvaliacao;
-    }
+    // --- Setters ---
+    public void setId(Long id) { this.id = id; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+    public void setProduto(Produto produto) { this.produto = produto; }
+    public void setNota(Integer nota) { this.nota = nota; }
+    public void setDescricao(String descricao) { this.descricao = descricao; }
+    public void setDataAvaliacao(LocalDate dataAvaliacao) { this.dataAvaliacao = dataAvaliacao; }
+    public void setEditado(boolean editado) { this.editado = editado; }
 }

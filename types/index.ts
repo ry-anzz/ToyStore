@@ -1,5 +1,3 @@
-// src/types/index.ts
-
 export interface Marca {
   id: number;
   nome: string;
@@ -10,14 +8,20 @@ export interface Categoria {
   nome: string;
 }
 
+// NOVA INTERFACE PARA IMAGENS
+export interface ProdutoImagem {
+  id?: number;
+  imagemUrl: string;
+}
+
 export interface Produto {
   id: number;
   nome: string;
   valor: number;
   descricao: string;
-  imagem_url: string;
+  // imagem_url: string; // REMOVIDO
+  imagens: ProdutoImagem[]; // ADICIONADO
   quantidadeEstoque?: number;
-  // --- CORREÇÃO AQUI: A API sempre retorna o objeto completo ---
   marca?: Marca;
   categoria?: Categoria;
 }
@@ -47,15 +51,13 @@ export interface Usuario {
   enderecos?: Endereco[];
 }
 
-// --- INTERFACE DE AVALIAÇÃO ATUALIZADA ---
-// Agora ela corresponde ao que o backend envia
 export interface Avaliacao {
   id: number;
-  autor: string; // Tinha 'usuarioId'
-  data: string;    // Tinha 'dataAvaliacao'
+  autor: string;
+  data: string;
   descricao: string;
   nota: 1 | 2 | 3 | 4 | 5;
-  produtoId?: number; // Opcional, pois a API não envia mais
+  produtoId?: number;
 }
 
 export interface ItemCarrinho {
@@ -74,3 +76,18 @@ export interface Banner {
   titulo: string;
   imagemUrl: string;
 }
+
+// ...
+
+export interface Avaliacao {
+  id: number;
+  autor: string;
+  autorId: number; // NOVO
+  data: string;
+  descricao: string;
+  nota: 1 | 2 | 3 | 4 | 5;
+  editado: boolean; // NOVO
+  produtoId?: number;
+}
+
+// ...

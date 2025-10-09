@@ -1,10 +1,12 @@
 package com.lojabrinquedo.loja.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "produto")
@@ -24,8 +26,7 @@ public class Produto {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal valor;
 
-    @Column(name = "imagem_url", nullable = false)
-    private String imagemUrl;
+    // O campo imagemUrl foi removido daqui
 
     @Column(name = "quantidade_estoque", columnDefinition = "INT DEFAULT 0")
     private Integer quantidadeEstoque;
@@ -38,27 +39,37 @@ public class Produto {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
     
-    // --- MÉTODO GET/SET PARA O ID QUE ESTAVA FALTANDO ---
+    @OneToMany(
+        mappedBy = "produto",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true,
+        fetch = FetchType.EAGER // EAGER para sempre carregar as imagens junto com o produto
+    )
+    @JsonManagedReference
+    private List<ProdutoImagem> imagens = new ArrayList<>();
+
+    // --- Getters e Setters Manuais ---
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    // --- Outros getters e setters manuais ---
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
+
     public BigDecimal getValor() { return valor; }
     public void setValor(BigDecimal valor) { this.valor = valor; }
+
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
+
     public Integer getQuantidadeEstoque() { return quantidadeEstoque; }
     public void setQuantidadeEstoque(Integer quantidadeEstoque) { this.quantidadeEstoque = quantidadeEstoque; }
-
-    @JsonProperty("imagem_url")
-    public String getImagemUrl() { return imagemUrl; }
-    public void setImagemUrl(String imagemUrl) { this.imagemUrl = imagemUrl; }
 
     public Marca getMarca() { return marca; }
     public void setMarca(Marca marca) { this.marca = marca; }
     
     public Categoria getCategoria() { return categoria; }
     public void setCategoria(Categoria categoria) { this.categoria = categoria; }
+
+    public List<ProdutoImagem> getImagens() { return imagens; }
+    public void setImagens(List<ProdutoImagem> imagens) { this.imagens = imagens; }
 }

@@ -1,14 +1,8 @@
 package com.lojabrinquedo.loja.controller;
 
 import com.lojabrinquedo.loja.dto.AvaliacaoResponse;
-import com.lojabrinquedo.loja.model.Avaliacao;
-import com.lojabrinquedo.loja.model.Categoria;
-import com.lojabrinquedo.loja.model.Marca;
-import com.lojabrinquedo.loja.model.Produto;
-import com.lojabrinquedo.loja.repository.AvaliacaoRepository;
-import com.lojabrinquedo.loja.repository.CategoriaRepository;
-import com.lojabrinquedo.loja.repository.MarcaRepository;
-import com.lojabrinquedo.loja.repository.ProdutoRepository;
+import com.lojabrinquedo.loja.model.*;
+import com.lojabrinquedo.loja.repository.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -40,43 +34,40 @@ public class ProdutoController {
         return produtoRepository.findAll();
     }
 
-    // A anotação @SuppressWarnings foi removida daqui
+    @SuppressWarnings("unchecked")
     private Produto preencherProduto(Map<String, Object> payload, Produto produto) {
-        Object marcaObj = payload.get("marca");
-        if (!(marcaObj instanceof Map)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Objeto 'marca' inválido no payload.");
-        }
-        Map<?, ?> marcaMap = (Map<?, ?>) marcaObj;
-        Object marcaIdObj = marcaMap.get("id");
-        if (marcaIdObj == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "'id' da marca não encontrado.");
-        }
-        Long marcaId = Long.valueOf(marcaIdObj.toString());
+        // Leitura de Marca e Categoria (sem alterações)
+        Map<String, Integer> marcaMap = (Map<String, Integer>) payload.get("marca");
+        Long marcaId = Long.valueOf(marcaMap.get("id"));
 
-        Object categoriaObj = payload.get("categoria");
-        if (!(categoriaObj instanceof Map)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Objeto 'categoria' inválido no payload.");
-        }
-        Map<?, ?> categoriaMap = (Map<?, ?>) categoriaObj;
-        Object categoriaIdObj = categoriaMap.get("id");
-        if (categoriaIdObj == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "'id' da categoria não encontrado.");
-        }
-        Long categoriaId = Long.valueOf(categoriaIdObj.toString());
+        Map<String, Integer> categoriaMap = (Map<String, Integer>) payload.get("categoria");
+        Long categoriaId = Long.valueOf(categoriaMap.get("id"));
 
         Marca marca = marcaRepository.findById(marcaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Marca com ID " + marcaId + " não encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Marca não encontrada"));
         Categoria categoria = categoriaRepository.findById(categoriaId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria com ID " + categoriaId + " não encontrada."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada"));
 
         produto.setNome((String) payload.get("nome"));
         produto.setDescricao((String) payload.get("descricao"));
         produto.setValor(new BigDecimal(payload.get("valor").toString()));
-        produto.setImagemUrl((String) payload.get("imagem_url"));
         produto.setQuantidadeEstoque(Integer.parseInt(payload.get("quantidadeEstoque").toString()));
         produto.setMarca(marca);
         produto.setCategoria(categoria);
 
+        // --- LÓGICA ATUALIZADA PARA MÚLTIPLAS IMAGENS ---
+        List<Map<String, String>> imagensPayload = (List<Map<String, String>>) payload.get("imagens");
+        if (imagensPayload != null) {
+            produto.getImagens().clear(); // Limpa a lista antiga para evitar duplicatas na edição
+            
+            for (Map<String, String> imgData : imagensPayload) {
+                ProdutoImagem novaImagem = new ProdutoImagem();
+                novaImagem.setImagemUrl(imgData.get("imagemUrl"));
+                novaImagem.setProduto(produto); // Associa a imagem ao produto
+                produto.getImagens().add(novaImagem);
+            }
+        }
+        
         return produto;
     }
 
@@ -86,7 +77,6 @@ public class ProdutoController {
         if (produtoRepository.existsByNome(nomeProduto)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Um produto com este nome já está cadastrado.");
         }
-
         Produto novoProduto = preencherProduto(payload, new Produto());
         return new ResponseEntity<>(produtoRepository.save(novoProduto), HttpStatus.CREATED);
     }

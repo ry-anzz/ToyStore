@@ -1,7 +1,7 @@
 // src/components/user/OrderItem.tsx
 import { Pedido } from "@/types";
 import { Button } from "../ui/Button";
-import Link from 'next/link'; // 1. Importar o componente Link
+import Link from 'next/link';
 
 interface OrderItemProps {
   order: Pedido;
@@ -15,8 +15,9 @@ const statusColors: { [key: string]: string } = {
 };
 
 export function OrderItem({ order }: OrderItemProps) {
-  const formattedDate = new Date(order.dataPedido).toLocaleDateString('pt-BR', {
-    day: '2-digit', month: 'long', year: 'numeric'
+  // ALTERAÇÃO AQUI: Trocado para toLocaleString para incluir o horário
+  const formattedDate = new Date(order.dataPedido).toLocaleString('pt-BR', {
+    day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
 
   return (
@@ -24,7 +25,8 @@ export function OrderItem({ order }: OrderItemProps) {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-4 border-b">
         <div>
           <h3 className="font-bold text-lg">Pedido #{order.id.toString().padStart(6, '0')}</h3>
-          <p className="text-sm text-gray-500">Realizado em: {formattedDate}</p>
+          {/* ALTERAÇÃO AQUI: Adicionado "às" para melhor formatação */}
+          <p className="text-sm text-gray-500">Realizado em: {formattedDate.replace(' ', ' às ')}h</p>
         </div>
         <div className="flex items-center gap-4">
           <span className={`px-3 py-1 text-sm font-semibold rounded-full ${statusColors[order.statusPedido.nome] || 'bg-gray-100'}`}>
@@ -53,7 +55,6 @@ export function OrderItem({ order }: OrderItemProps) {
           )}
         </div>
         
-        {/* 2. AQUI ESTÁ A CORREÇÃO: O botão agora é um link */}
         <Button asChild>
           <Link href={`/conta/pedidos/${order.id}`}>Ver Detalhes</Link>
         </Button>

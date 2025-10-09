@@ -3,16 +3,28 @@
 
 import { ProductCard } from "@/components/products/ProductCard";
 import { Popup } from "@/components/ui/Popup";
-import { Produto } from "@/types";
-import { useSearchParams } from "next/navigation";
+import { Categoria, Produto } from "@/types";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Carousel } from "@/components/home/Carousel";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
+import Link from "next/link";
 
 const API_URL = "http://localhost:8080/api";
 
+// Lista de categorias que você pediu
+const listaCategorias: Categoria[] = [
+    { id: 1, nome: "Blocos" },
+    { id: 2, nome: "Bonecos" },
+    { id: 3, nome: "Carrinhos" },
+    { id: 4, nome: "Jogos de Tabuleiro" },
+    { id: 5, nome: "Pelucias" },
+];
+
 export default function HomePage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,22 +59,21 @@ export default function HomePage() {
         type: "success",
         message: "Você saiu da sua conta com sucesso!",
       });
+      // Limpa o parâmetro da URL sem recarregar a página
       window.history.replaceState(null, "", "/");
     }
   }, [searchParams]);
 
   const query = searchParams.get("q")?.toLowerCase() || "";
-  const marcaFiltro = searchParams.get("marca"); // 1. Pegamos o filtro de marca da URL
+  const marcaFiltro = searchParams.get("marca");
+  const categoriaFiltro = searchParams.get("categoria");
 
   const filteredProducts = produtos.filter((product) => {
-    // Condição 1: O nome do produto corresponde à busca?
     const matchesQuery = product.nome.toLowerCase().includes(query);
-
-    // Condição 2: A marca do produto corresponde ao filtro? (Se não houver filtro, considera verdadeiro)
     const matchesMarca = !marcaFiltro || product.marca.nome === marcaFiltro;
+    const matchesCategoria = !categoriaFiltro || product.categoria.nome === categoriaFiltro;
 
-    // O produto só aparece se atender às DUAS condições
-    return matchesQuery && matchesMarca;
+    return matchesQuery && matchesMarca && matchesCategoria;
   });
 
   if (isLoading) {
@@ -77,9 +88,7 @@ export default function HomePage() {
   if (error) {
     return (
       <div className="text-center py-16 bg-red-50 rounded-lg">
-        <h2 className="text-2xl font-bold text-red-700">
-          Oops! Algo deu errado.
-        </h2>
+        <h2 className="text-2xl font-bold text-red-700">Oops! Algo deu errado.</h2>
         <p className="text-red-600 mt-2">{error}</p>
       </div>
     );
@@ -96,52 +105,49 @@ export default function HomePage() {
       )}
 
       <div className="space-y-16">
-        {/* Carrossel (assumindo que já está estilizado ou é um componente externo) */}
         <Carousel />
 
-        {/* Seção Principal da Loja com novo layout */}
         <section className="flex flex-col lg:flex-row gap-10">
-          {/* NOVO ESTILO: Barra Lateral de Filtros */}
           <aside className="w-full lg:w-1/4">
             <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-200 sticky top-28">
               <h3 className="flex items-center gap-2 font-extrabold text-xl text-slate-700 border-b-2 border-slate-200 pb-3 mb-4">
                 <Filter size={20} className="text-sky-500" />
                 Filtros
               </h3>
+
+              {(marcaFiltro || categoriaFiltro) && (
+                <div className="mb-6 p-3 bg-amber-100 rounded-md">
+                  <h4 className="font-bold text-amber-900 mb-2 text-sm">Filtros Ativos:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {marcaFiltro && <span className="flex items-center gap-1 text-xs bg-sky-200 text-sky-800 font-semibold px-2 py-1 rounded-full">{marcaFiltro}</span>}
+                    {categoriaFiltro && <span className="flex items-center gap-1 text-xs bg-teal-200 text-teal-800 font-semibold px-2 py-1 rounded-full">{categoriaFiltro}</span>}
+                  </div>
+                  <button onClick={() => router.push('/')} className="text-xs text-sky-600 hover:underline block mt-3 font-semibold w-full text-left">
+                    <X size={12} className="inline mr-1"/>Limpar todos os filtros
+                  </button>
+                </div>
+              )}
+
               <div>
                 <h4 className="font-bold text-slate-600 mb-3">Categorias</h4>
                 <ul className="space-y-2 text-slate-500 font-semibold">
-                  <li>
-                    <a
-                      href="#"
-                      className="flex items-center gap-2 p-2 rounded-md hover:bg-amber-100 hover:text-amber-700 transition-colors"
-                    >
-                      Blocos de Montar
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="flex items-center gap-2 p-2 rounded-md hover:bg-amber-100 hover:text-amber-700 transition-colors"
-                    >
-                      Bonecas & Cia
-                    </a>
-                  </li>
-                  <li>
-                    <a
-                      href="#"
-                      className="flex items-center gap-2 p-2 rounded-md hover:bg-amber-100 hover:text-amber-700 transition-colors"
-                    >
-                      Jogos
-                    </a>
-                  </li>
+                  {listaCategorias.map(categoria => (
+                    <li key={categoria.id}>
+                      <Link
+                        href={`/?categoria=${categoria.nome}`}
+                        className={`flex items-center gap-2 p-2 rounded-md hover:bg-amber-100 hover:text-amber-700 transition-colors ${
+                            categoriaFiltro === categoria.nome ? 'bg-amber-100 text-amber-800 font-bold' : ''
+                        }`}
+                      >
+                        {categoria.nome}
+                      </Link>
+                    </li>
+                  ))}
                 </ul>
               </div>
-              {/* Espaço para mais filtros no futuro (preço, marca, etc.) */}
             </div>
           </aside>
 
-          {/* NOVO ESTILO: Grade de Produtos */}
           <main className="w-full lg:w-3/4">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-slate-800">
@@ -165,7 +171,7 @@ export default function HomePage() {
                   Nenhum produto encontrado.
                 </h2>
                 <p className="text-slate-500 mt-2">
-                  Tente uma busca diferente ou verifique os filtros.
+                  Tente uma busca diferente ou limpar os filtros.
                 </p>
               </div>
             )}

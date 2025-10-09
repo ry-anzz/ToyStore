@@ -12,13 +12,13 @@ import Link from "next/link";
 
 const API_URL = "http://localhost:8080/api";
 
-// Lista de categorias que você pediu
+// Lista de categorias para o filtro
 const listaCategorias: Categoria[] = [
-    { id: 1, nome: "Blocos" },
-    { id: 2, nome: "Bonecos" },
-    { id: 3, nome: "Carrinhos" },
-    { id: 4, nome: "Jogos de Tabuleiro" },
-    { id: 5, nome: "Pelucias" },
+  { id: 1, nome: "Blocos" },
+  { id: 2, nome: "Bonecos" },
+  { id: 3, nome: "Carrinhos" },
+  { id: 4, nome: "Jogos de Tabuleiro" },
+  { id: 5, nome: "Pelucias" },
 ];
 
 export default function HomePage() {
@@ -70,8 +70,9 @@ export default function HomePage() {
 
   const filteredProducts = produtos.filter((product) => {
     const matchesQuery = product.nome.toLowerCase().includes(query);
-    const matchesMarca = !marcaFiltro || product.marca.nome === marcaFiltro;
-    const matchesCategoria = !categoriaFiltro || product.categoria.nome === categoriaFiltro;
+    const matchesMarca = !marcaFiltro || product.marca?.nome === marcaFiltro;
+    const matchesCategoria =
+      !categoriaFiltro || product.categoria?.nome === categoriaFiltro;
 
     return matchesQuery && matchesMarca && matchesCategoria;
   });
@@ -88,7 +89,9 @@ export default function HomePage() {
   if (error) {
     return (
       <div className="text-center py-16 bg-red-50 rounded-lg">
-        <h2 className="text-2xl font-bold text-red-700">Oops! Algo deu errado.</h2>
+        <h2 className="text-2xl font-bold text-red-700">
+          Oops! Algo deu errado.
+        </h2>
         <p className="text-red-600 mt-2">{error}</p>
       </div>
     );
@@ -117,13 +120,27 @@ export default function HomePage() {
 
               {(marcaFiltro || categoriaFiltro) && (
                 <div className="mb-6 p-3 bg-amber-100 rounded-md">
-                  <h4 className="font-bold text-amber-900 mb-2 text-sm">Filtros Ativos:</h4>
+                  <h4 className="font-bold text-amber-900 mb-2 text-sm">
+                    Filtros Ativos:
+                  </h4>
                   <div className="flex flex-wrap gap-2">
-                    {marcaFiltro && <span className="flex items-center gap-1 text-xs bg-sky-200 text-sky-800 font-semibold px-2 py-1 rounded-full">{marcaFiltro}</span>}
-                    {categoriaFiltro && <span className="flex items-center gap-1 text-xs bg-teal-200 text-teal-800 font-semibold px-2 py-1 rounded-full">{categoriaFiltro}</span>}
+                    {marcaFiltro && (
+                      <span className="flex items-center gap-1 text-xs bg-sky-200 text-sky-800 font-semibold px-2 py-1 rounded-full">
+                        {marcaFiltro}
+                      </span>
+                    )}
+                    {categoriaFiltro && (
+                      <span className="flex items-center gap-1 text-xs bg-teal-200 text-teal-800 font-semibold px-2 py-1 rounded-full">
+                        {categoriaFiltro}
+                      </span>
+                    )}
                   </div>
-                  <button onClick={() => router.push('/')} className="text-xs text-sky-600 hover:underline block mt-3 font-semibold w-full text-left">
-                    <X size={12} className="inline mr-1"/>Limpar todos os filtros
+                  <button
+                    onClick={() => router.push("/")}
+                    className="text-xs text-sky-600 hover:underline block mt-3 font-semibold w-full text-left"
+                  >
+                    <X size={12} className="inline mr-1" />
+                    Limpar todos os filtros
                   </button>
                 </div>
               )}
@@ -131,12 +148,14 @@ export default function HomePage() {
               <div>
                 <h4 className="font-bold text-slate-600 mb-3">Categorias</h4>
                 <ul className="space-y-2 text-slate-500 font-semibold">
-                  {listaCategorias.map(categoria => (
+                  {listaCategorias.map((categoria) => (
                     <li key={categoria.id}>
                       <Link
                         href={`/?categoria=${categoria.nome}`}
                         className={`flex items-center gap-2 p-2 rounded-md hover:bg-amber-100 hover:text-amber-700 transition-colors ${
-                            categoriaFiltro === categoria.nome ? 'bg-amber-100 text-amber-800 font-bold' : ''
+                          categoriaFiltro === categoria.nome
+                            ? "bg-amber-100 text-amber-800 font-bold"
+                            : ""
                         }`}
                       >
                         {categoria.nome}

@@ -8,7 +8,6 @@ export interface Categoria {
   nome: string;
 }
 
-// NOVA INTERFACE PARA IMAGENS
 export interface ProdutoImagem {
   id?: number;
   imagemUrl: string;
@@ -19,8 +18,7 @@ export interface Produto {
   nome: string;
   valor: number;
   descricao: string;
-  // imagem_url: string; // REMOVIDO
-  imagens: ProdutoImagem[]; // ADICIONADO
+  imagens: ProdutoImagem[];
   quantidadeEstoque?: number;
   marca?: Marca;
   categoria?: Categoria;
@@ -54,14 +52,15 @@ export interface Usuario {
 export interface Avaliacao {
   id: number;
   autor: string;
+  autorId: number;
   data: string;
   descricao: string;
   nota: 1 | 2 | 3 | 4 | 5;
+  editado: boolean;
   produtoId?: number;
 }
 
 export interface ItemCarrinho {
-  id: number;
   produto: Produto;
   quantidade: number;
 }
@@ -77,17 +76,20 @@ export interface Banner {
   imagemUrl: string;
 }
 
-// ...
-
-export interface Avaliacao {
+export interface ItemPedido {
   id: number;
-  autor: string;
-  autorId: number; // NOVO
-  data: string;
-  descricao: string;
-  nota: 1 | 2 | 3 | 4 | 5;
-  editado: boolean; // NOVO
-  produtoId?: number;
+  quantidade: number;
+  precoUnitario: number;
+  produto: Pick<Produto, 'id' | 'nome' | 'imagens'>;
 }
 
-// ...
+export interface Pedido {
+  id: number;
+  dataPedido: string;
+  valorTotal: number;
+  statusPedido: {
+    id: number;
+    nome: string;
+  };
+  itens: ItemPedido[];
+}

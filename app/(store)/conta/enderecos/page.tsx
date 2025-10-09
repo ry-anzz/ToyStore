@@ -21,7 +21,6 @@ export default function AddressesPage() {
   const [popup, setPopup] = useState({ show: false, type: 'success' as 'success' | 'error', message: '' });
 
   const handleSaveAddress = async (addressData: Endereco) => {
-    // Se tem um ID, é uma atualização (PUT), senão é uma criação (POST)
     const isEditing = !!addressData.id;
     const url = isEditing ? `${API_URL}/enderecos/${addressData.id}` : `${API_URL}/enderecos`;
     const method = isEditing ? 'PUT' : 'POST';
@@ -30,12 +29,11 @@ export default function AddressesPage() {
       const response = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...addressData, usuarioId: user?.id }), // Garante que o ID do usuário está no corpo
+        body: JSON.stringify({ ...addressData, usuarioId: user?.id }),
       });
 
       if (!response.ok) throw new Error("Falha ao salvar endereço.");
 
-      // Atualiza a lista de endereços no frontend
       const updatedAddresses = isEditing
         ? user?.enderecos?.map(a => a.id === addressData.id ? addressData : a) || []
         : [...(user?.enderecos || []), await response.json()];
@@ -66,7 +64,7 @@ export default function AddressesPage() {
     } catch (error) {
       setPopup({ show: true, type: 'error', message: 'Não foi possível excluir o endereço.' });
     } finally {
-      setDeletingAddress(null); // Fecha o modal de confirmação
+      setDeletingAddress(null);
     }
   };
 
@@ -81,6 +79,8 @@ export default function AddressesPage() {
         onConfirm={handleDeleteAddress}
         title="Confirmar Exclusão"
         message="Tem certeza que deseja excluir este endereço? Esta ação não pode ser desfeita."
+        // --- LINHA ADICIONADA AQUI ---
+        cancelButtonClass="bg-blue-500 hover:bg-blue-600 text-white"
       />
 
       <div>

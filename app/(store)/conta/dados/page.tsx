@@ -118,7 +118,7 @@ export default function UserDataPage() {
           <div className="flex justify-end gap-3 pt-4 border-t">
             {isEditing ? (
               <>
-                <Button type="button" onClick={handleCancel} className="bg-gray-600 hover:bg-gray-700">Cancelar</Button>
+                <Button type="button" onClick={handleCancel} className="bg-gray-600 hover:bg-red-700">Cancelar</Button>
                 <Button type="submit">Salvar Alterações</Button>
               </>
             ) : (

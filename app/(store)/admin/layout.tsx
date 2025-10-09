@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { LayoutDashboard, Package, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Package, LogOut, Home, Tag } from "lucide-react"; // Adicionado o ícone Tag
 import { usePathname, useRouter } from "next/navigation";
 
 export default function AdminLayout({
@@ -41,6 +41,7 @@ export default function AdminLayout({
   const navLinks = [
     { name: "Gerenciar Produtos", href: "/admin/produtos", icon: Package },
     { name: "Gerenciar Marcas", href: "/admin/marcas", icon: Package },
+    { name: "Gerenciar Categorias", href: "/admin/categorias", icon: Tag }, // NOVA LINHA AQUI
     { name: "Métodos de Pagamento", href: "/admin/metodos-pagamento", icon: Package },
     { name: "Voltar para Loja", href: "/", icon: Home },
   ];

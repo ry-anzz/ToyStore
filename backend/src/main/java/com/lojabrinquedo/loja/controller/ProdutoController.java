@@ -34,6 +34,7 @@ public class ProdutoController {
         return produtoRepository.findAll();
     }
 
+    @SuppressWarnings("unchecked")
     private Produto preencherProduto(Map<String, Object> payload, Produto produto) {
         // Extrai o ID da marca do payload
         Map<String, Integer> marcaMap = (Map<String, Integer>) payload.get("marca");
@@ -62,6 +63,12 @@ public class ProdutoController {
 
     @PostMapping
     public ResponseEntity<Produto> criar(@RequestBody Map<String, Object> payload) {
+        // VERIFICAÇÃO DE DUPLICIDADE
+        String nomeProduto = (String) payload.get("nome");
+        if (produtoRepository.existsByNome(nomeProduto)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Um produto com este nome já está cadastrado.");
+        }
+
         Produto novoProduto = preencherProduto(payload, new Produto());
         return new ResponseEntity<>(produtoRepository.save(novoProduto), HttpStatus.CREATED);
     }

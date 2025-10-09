@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Produto, Marca, Categoria } from '@/types'; // Adicionado Categoria
+import { Produto, Marca, Categoria } from '@/types';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 
@@ -15,7 +15,7 @@ const API_URL = 'http://localhost:8080/api';
 
 export function AdminProductForm({ initialData, onSave, onCancel }: AdminProductFormProps) {
   const [brands, setBrands] = useState<Marca[]>([]);
-  const [categories, setCategories] = useState<Categoria[]>([]); // Estado para categorias
+  const [categories, setCategories] = useState<Categoria[]>([]);
   const [formData, setFormData] = useState({
     nome: '',
     descricao: '',
@@ -23,11 +23,14 @@ export function AdminProductForm({ initialData, onSave, onCancel }: AdminProduct
     imagem_url: '',
     quantidadeEstoque: 0,
     marcaId: '',
-    categoriaId: '', // Novo campo
+    categoriaId: '',
   });
+  // --- NOVO ESTADO PARA CONTROLAR O UPLOAD ---
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Busca marcas e categorias
+
   useEffect(() => {
+    // ... (código para buscar marcas e categorias, sem alteração) ...
     const fetchData = async () => {
       try {
         const [brandsRes, categoriesRes] = await Promise.all([
@@ -56,22 +59,79 @@ export function AdminProductForm({ initialData, onSave, onCancel }: AdminProduct
     }
   }, [initialData]);
 
+  // --- NOVA FUNÇÃO PARA UPLOAD DA IMAGEM ---
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const body = new FormData();
+    body.append('image', file);
+
+    try {
+      // Envia a imagem para a API do imgbb
+      const response = await fetch(`https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`, {
+        method: 'POST',
+        body: body,
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha no upload da imagem.');
+      }
+
+      const result = await response.json();
+      
+      // Atualiza o formulário com a URL da imagem retornada pela API
+      setFormData(prev => ({ ...prev, imagem_url: result.data.display_url }));
+
+    } catch (error) {
+      console.error(error);
+      alert('Não foi possível enviar a imagem.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    // ... (código do handleChange, sem alteração) ...
+    const { name, value, type } = e.target;
+    if (type === 'number') {
+      const numValue = value === '' ? 0 : parseInt(value, 10);
+      setFormData(prev => ({ ...prev, [name]: Math.max(0, numValue) }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ... (código do handlePriceChange, sem alteração) ...
+    let digits = e.target.value.replace(/\D/g, '');
+    if (digits === '') {
+      digits = '0';
+    }
+    const numericValue = Number(digits) / 100;
+    setFormData(prev => ({ ...prev, valor: numericValue }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    // ... (código do handleSubmit, sem alteração) ...
     e.preventDefault();
-    const url = initialData ? `${API_URL}/produtos/${initialData.id}` : API_URL;
-    const method = initialData ? 'PUT' : 'POST';
 
+    // Garante que a imagem foi enviada antes de salvar o produto
+    if (!formData.imagem_url) {
+      alert("Por favor, envie uma imagem para o produto.");
+      return;
+    }
+
+    const url = initialData ? `${API_URL}/produtos/${initialData.id}` : `${API_URL}/produtos`;
+    const method = initialData ? 'PUT' : 'POST';
     const payload = {
       ...formData,
+      valor: formData.valor,
       marca: { id: parseInt(formData.marcaId) },
-      categoria: { id: parseInt(formData.categoriaId) }, // Adiciona categoria ao payload
+      categoria: { id: parseInt(formData.categoriaId) },
     };
-
     try {
       const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!response.ok) throw new Error("Falha ao salvar produto.");
@@ -81,45 +141,43 @@ export function AdminProductForm({ initialData, onSave, onCancel }: AdminProduct
     }
   };
 
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6">{initialData ? 'Editar Produto' : 'Adicionar Novo Produto'}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+        
+        {/* ... (campos Nome, Marca, Categoria, Descrição, Preço, Estoque) ... */}
+        <div><label className="block text-sm font-medium text-gray-700">Nome do Brinquedo</label><Input name="nome" value={formData.nome} onChange={handleChange} required className="w-full mt-1" placeholder="Ex: Carrinho de Controle Remoto" /></div>
+        <div className="flex gap-4"><div className="w-1/2"><label className="block text-sm font-medium text-gray-700">Marca</label><select name="marcaId" value={formData.marcaId} onChange={handleChange} required className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2"><option value="" disabled>Selecione</option>{brands.map(brand => <option key={brand.id} value={brand.id}>{brand.nome}</option>)}</select></div><div className="w-1/2"><label className="block text-sm font-medium text-gray-700">Categoria</label><select name="categoriaId" value={formData.categoriaId} onChange={handleChange} required className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2"><option value="" disabled>Selecione</option>{categories.map(cat => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}</select></div></div>
+        <div><label className="block text-sm font-medium text-gray-700">Descrição</label><textarea name="descricao" value={formData.descricao} onChange={handleChange} rows={4} className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2" placeholder="Descreva as características principais do produto..." /></div>
+        <div className="flex gap-4"><div className="w-1/2"><label className="block text-sm font-medium text-gray-700">Preço (R$)</label><Input name="valor" type="text" value={formData.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} onChange={handlePriceChange} required className="w-full mt-1" /></div><div className="w-1/2"><label className="block text-sm font-medium text-gray-700">Estoque</label><Input name="quantidadeEstoque" type="number" min="0" value={formData.quantidadeEstoque} onChange={handleChange} required className="w-full mt-1" /></div></div>
+
+        {/* --- CAMPO DE IMAGEM ATUALIZADO --- */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nome do Brinquedo</label>
-          <Input name="nome" value={formData.nome} onChange={handleChange} required className="w-full mt-1" />
+          <label className="block text-sm font-medium text-gray-700">Imagem do Produto</label>
+          <input 
+            type="file" 
+            onChange={handleImageUpload} 
+            accept="image/*"
+            className="w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          {isUploading && <p className="text-sm text-blue-600 mt-2">Enviando imagem, por favor aguarde...</p>}
+
+          {/* Pré-visualização da imagem enviada */}
+          {formData.imagem_url && !isUploading && (
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-700">Pré-visualização:</p>
+              <img src={formData.imagem_url} alt="Pré-visualização do produto" className="mt-2 rounded-lg border max-h-48" />
+            </div>
+          )}
         </div>
-        <div className="flex gap-4">
-          <div className="w-1/2">
-            <label className="block text-sm font-medium text-gray-700">Marca</label>
-            <select name="marcaId" value={formData.marcaId} onChange={handleChange} required className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2">
-              <option value="" disabled>Selecione</option>
-              {brands.map(brand => <option key={brand.id} value={brand.id}>{brand.nome}</option>)}
-            </select>
-          </div>
-          <div className="w-1/2">
-            <label className="block text-sm font-medium text-gray-700">Categoria</label>
-            <select name="categoriaId" value={formData.categoriaId} onChange={handleChange} required className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2">
-              <option value="" disabled>Selecione</option>
-              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}
-            </select>
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Descrição</label>
-          <textarea name="descricao" value={formData.descricao} onChange={handleChange} rows={4} className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2" />
-        </div>
-        <div className="flex gap-4">
-          <div className="w-1/2"><label className="block text-sm font-medium text-gray-700">Preço (R$)</label><Input name="valor" type="number" step="0.01" value={formData.valor} onChange={handleChange} required className="w-full mt-1" /></div>
-          <div className="w-1/2"><label className="block text-sm font-medium text-gray-700">Estoque</label><Input name="quantidadeEstoque" type="number" min="0" value={formData.quantidadeEstoque} onChange={handleChange} required className="w-full mt-1" /></div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">URL da Imagem</label>
-          <Input name="imagem_url" value={formData.imagem_url} onChange={handleChange} required className="w-full mt-1" />
-        </div>
+        
         <div className="flex justify-end gap-4 pt-4">
           <Button type="button" onClick={onCancel} className="bg-gray-600 hover:bg-gray-700">Cancelar</Button>
-          <Button type="submit">Salvar Produto</Button>
+          <Button type="submit" disabled={isUploading}>
+            {isUploading ? 'Aguarde...' : 'Salvar Produto'}
+          </Button>
         </div>
       </form>
     </div>

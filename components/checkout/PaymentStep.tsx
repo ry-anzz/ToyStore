@@ -6,8 +6,9 @@ import { Lock, CreditCard, Copy, QrCode } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Popup } from "../ui/Popup";
+import { MetodoPagamento } from "@/types";
 
 interface PaymentStepProps {
   onBack: () => void;
@@ -23,23 +24,43 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
   
   const [paymentMethod, setPaymentMethod] = useState<'cartao' | 'pix' | null>(null);
   const [pixKey, setPixKey] = useState<string | null>(null);
-  // NOVO ESTADO: para verificar se a chave foi copiada
   const [hasCopiedPixKey, setHasCopiedPixKey] = useState(false);
-
   const [isLoading, setIsLoading] = useState(false);
   const [popup, setPopup] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' });
+
+  // Estado para armazenar os métodos de pagamento vindos da API
+  const [metodosPagamentoApi, setMetodosPagamentoApi] = useState<MetodoPagamento[]>([]);
+
+  // Busca os métodos de pagamento da API quando o componente é montado
+  useEffect(() => {
+    const fetchMetodosPagamento = async () => {
+      try {
+        const response = await fetch(`${API_URL}/metodos-pagamento`);
+        if (response.ok) {
+          setMetodosPagamentoApi(await response.json());
+        } else {
+          console.error("API falhou ao buscar métodos de pagamento.");
+          setPopup({ show: true, message: 'Não foi possível carregar os métodos de pagamento.', type: 'error' });
+        }
+      } catch (error) {
+        console.error("Falha ao buscar métodos de pagamento:", error);
+        setPopup({ show: true, message: 'Erro de conexão ao buscar métodos de pagamento.', type: 'error' });
+      }
+    };
+    fetchMetodosPagamento();
+  }, []);
 
   const handleGeneratePixKey = () => {
     const randomKey = crypto.randomUUID();
     setPixKey(randomKey);
-    setHasCopiedPixKey(false); // Reseta o status de cópia ao gerar uma nova chave
+    setHasCopiedPixKey(false);
     setPopup({ show: true, message: 'Chave Pix gerada com sucesso!', type: 'success' });
   };
 
   const handleCopyPixKey = () => {
     if (pixKey) {
       navigator.clipboard.writeText(pixKey);
-      setHasCopiedPixKey(true); // Define que a chave foi copiada
+      setHasCopiedPixKey(true);
       setPopup({ show: true, message: 'Chave copiada para a área de transferência!', type: 'success' });
     }
   };
@@ -51,17 +72,22 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
   }
 
   const handleFinalize = async () => {
-    if (!user || totalItens === 0 || !selectedAddressId || !paymentMethod) {
+    // Validações iniciais
+    if (!paymentMethod) {
       setPopup({ show: true, message: 'Selecione um método de pagamento para finalizar o pedido.', type: 'error'});
       return;
     }
+    if (!user || totalItens === 0 || !selectedAddressId) {
+      setPopup({ show: true, message: 'Não foi possível finalizar o pedido. Verifique os itens e o endereço.', type: 'error'});
+      return;
+    }
 
+    // Validações específicas do Pix
     if (paymentMethod === 'pix') {
       if (!pixKey) {
         setPopup({ show: true, message: 'Você precisa gerar a chave Pix antes de finalizar.', type: 'error'});
         return;
       }
-      // NOVA VALIDAÇÃO: Verifica se a chave foi copiada
       if (!hasCopiedPixKey) {
         setPopup({ show: true, message: 'Por favor, copie a chave Pix para confirmar o pagamento.', type: 'error'});
         return;
@@ -70,12 +96,21 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
     
     setIsLoading(true);
 
-    const metodoPagamentoId = paymentMethod === 'cartao' ? 1 : 2; 
+    // Lógica corrigida para encontrar o ID dinamicamente
+    const nomeMetodo = paymentMethod === 'cartao' ? 'Cartão de Crédito' : 'Pix';
+    const metodoSelecionado = metodosPagamentoApi.find(m => m.nome.toLowerCase() === nomeMetodo.toLowerCase());
 
+    if (!metodoSelecionado || !metodoSelecionado.id) {
+      setPopup({ show: true, message: `O método de pagamento "${nomeMetodo}" não foi encontrado no sistema.`, type: 'error'});
+      setIsLoading(false);
+      return;
+    }
+    
+    // Monta o objeto do pedido com o ID correto
     const pedidoData = {
       usuarioId: user.id,
       enderecoId: selectedAddressId,
-      metodoPagamentoId: metodoPagamentoId,
+      metodoPagamentoId: metodoSelecionado.id,
       itens: itens,
     };
 
@@ -133,7 +168,6 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
           </div>
         </div>
         
-        {/* Div para conter o conteúdo do pagamento e ocupar o espaço */}
         <div className="min-h-[180px] flex flex-col justify-center">
           {paymentMethod === 'cartao' && (
             <div className="space-y-4 animate-fade-in-up">

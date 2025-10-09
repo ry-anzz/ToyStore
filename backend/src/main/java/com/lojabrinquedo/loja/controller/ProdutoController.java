@@ -1,20 +1,32 @@
 package com.lojabrinquedo.loja.controller;
 
+import com.lojabrinquedo.loja.model.Categoria;
+import com.lojabrinquedo.loja.model.Marca;
 import com.lojabrinquedo.loja.model.Produto;
+import com.lojabrinquedo.loja.repository.CategoriaRepository;
+import com.lojabrinquedo.loja.repository.MarcaRepository;
 import com.lojabrinquedo.loja.repository.ProdutoRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/produtos")
 public class ProdutoController {
 
     private final ProdutoRepository produtoRepository;
+    private final MarcaRepository marcaRepository;
+    private final CategoriaRepository categoriaRepository;
 
-    public ProdutoController(ProdutoRepository produtoRepository) {
+    public ProdutoController(ProdutoRepository produtoRepository, MarcaRepository marcaRepository, CategoriaRepository categoriaRepository) {
         this.produtoRepository = produtoRepository;
+        this.marcaRepository = marcaRepository;
+        this.categoriaRepository = categoriaRepository;
     }
 
     @GetMapping
@@ -22,42 +34,51 @@ public class ProdutoController {
         return produtoRepository.findAll();
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
-        return produtoRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    private Produto preencherProduto(Map<String, Object> payload, Produto produto) {
+        // Extrai o ID da marca do payload
+        Map<String, Integer> marcaMap = (Map<String, Integer>) payload.get("marca");
+        Long marcaId = Long.valueOf(marcaMap.get("id"));
+
+        // Extrai o ID da categoria do payload
+        Map<String, Integer> categoriaMap = (Map<String, Integer>) payload.get("categoria");
+        Long categoriaId = Long.valueOf(categoriaMap.get("id"));
+
+        // Busca as entidades no banco
+        Marca marca = marcaRepository.findById(marcaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Marca não encontrada"));
+        Categoria categoria = categoriaRepository.findById(categoriaId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Categoria não encontrada"));
+
+        produto.setNome((String) payload.get("nome"));
+        produto.setDescricao((String) payload.get("descricao"));
+        produto.setValor(new BigDecimal(payload.get("valor").toString()));
+        produto.setImagemUrl((String) payload.get("imagem_url"));
+        produto.setQuantidadeEstoque(Integer.parseInt(payload.get("quantidadeEstoque").toString()));
+        produto.setMarca(marca);
+        produto.setCategoria(categoria);
+
+        return produto;
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    // **NOTA:** ESTE MÉTODO DEVE SER PROTEGIDO POR SPRING SECURITY (APENAS ADMIN)
-    public Produto criar(@RequestBody Produto produto) {
-        return produtoRepository.save(produto);
+    public ResponseEntity<Produto> criar(@RequestBody Map<String, Object> payload) {
+        Produto novoProduto = preencherProduto(payload, new Produto());
+        return new ResponseEntity<>(produtoRepository.save(novoProduto), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody Produto produtoDetalhes) {
+    public ResponseEntity<Produto> atualizar(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         return produtoRepository.findById(id)
                 .map(produtoExistente -> {
-                    // Atualize todos os campos necessários aqui
-                    produtoExistente.setNome(produtoDetalhes.getNome());
-                    produtoExistente.setValor(produtoDetalhes.getValor());
-                    produtoExistente.setDescricao(produtoDetalhes.getDescricao());
-                    produtoExistente.setQuantidadeEstoque(produtoDetalhes.getQuantidadeEstoque());
-                    // ... Lógica para Marca e Categoria (se houver) ...
-                    
-                    Produto produtoAtualizado = produtoRepository.save(produtoExistente);
-                    return ResponseEntity.ok(produtoAtualizado);
+                    Produto produtoAtualizado = preencherProduto(payload, produtoExistente);
+                    return ResponseEntity.ok(produtoRepository.save(produtoAtualizado));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!produtoRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!produtoRepository.existsById(id)) return ResponseEntity.notFound().build();
         produtoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

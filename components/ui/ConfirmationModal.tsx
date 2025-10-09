@@ -10,15 +10,19 @@ interface ConfirmationModalProps {
   onConfirm: () => void;
   title: string;
   message: string;
+  // --- NOVA PROPRIEDADE AQUI ---
+  cancelButtonClass?: string; // Propriedade opcional para customizar o estilo do botão Cancelar
 }
 
-export function ConfirmationModal({ isOpen, onClose, onConfirm, title, message }: ConfirmationModalProps) {
+export function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, cancelButtonClass }: ConfirmationModalProps) {
   if (!isOpen) {
     return null;
   }
 
+  // --- Classes padrão para o botão Cancelar se não for fornecida uma customizada ---
+  const defaultCancelClasses = "bg-gray-200 text-gray-800 hover:bg-gray-300";
+
   return (
-    // ALTERAÇÃO: Fundo com efeito de blur
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 text-center animate-fade-in-up">
         <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
@@ -27,10 +31,10 @@ export function ConfirmationModal({ isOpen, onClose, onConfirm, title, message }
         <h3 className="text-lg font-semibold text-gray-900 mt-4">{title}</h3>
         <p className="text-sm text-gray-500 mt-2">{message}</p>
         <div className="mt-6 flex justify-center gap-4">
-          {/* ALTERAÇÃO: Cor do botão "Cancelar" */}
           <Button
             type="button"
-            className="bg-blue-200 text-gray-800 hover:bg-blue-300"
+            // --- APLICA A CLASSE CUSTOMIZADA OU A PADRÃO ---
+            className={cancelButtonClass || defaultCancelClasses}
             onClick={onClose}
           >
             Cancelar

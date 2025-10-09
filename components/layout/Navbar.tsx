@@ -23,7 +23,7 @@ export function Navbar() {
         { id: 2, nome: "Mattel" },
         { id: 3, nome: "Hasbro" },
         { id: 4, nome: "Estrela" },
-        { id: 4, nome: "Playmobil" },
+        { id: 5, nome: "Playmobil" },
       ];
       setMarcas(mockMarcas);
     };

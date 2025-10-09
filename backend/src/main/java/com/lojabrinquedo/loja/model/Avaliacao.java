@@ -1,4 +1,5 @@
 package com.lojabrinquedo.loja.model;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -6,7 +7,8 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "avaliacao")
-@Data @NoArgsConstructor
+@Data 
+@NoArgsConstructor
 public class Avaliacao {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
 
@@ -18,4 +20,29 @@ public class Avaliacao {
     @Column(length = 700) private String descricao;
 
     @Column(name = "data_avaliacao") private LocalDate dataAvaliacao;
+
+    // --- MÉTODOS GETTERS ADICIONADOS MANUALMENTE ---
+    public Long getId() {
+        return id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public Produto getProduto() {
+        return produto;
+    }
+
+    public Integer getNota() {
+        return nota;
+    }
+
+    public String getDescricao() {
+        return descricao;
+    }
+
+    public LocalDate getDataAvaliacao() {
+        return dataAvaliacao;
+    }
 }

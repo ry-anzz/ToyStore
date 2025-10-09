@@ -17,12 +17,13 @@ export interface Produto {
   descricao: string;
   imagem_url: string;
   quantidadeEstoque?: number;
-  marca?: Marca | number;
-  categoria?: Categoria | number;
+  // --- CORREÇÃO AQUI: A API sempre retorna o objeto completo ---
+  marca?: Marca;
+  categoria?: Categoria;
 }
 
 export interface Endereco {
-  id?: number; // ALTERAÇÃO AQUI: 'id' agora é opcional
+  id?: number;
   usuario_id?: number;
   apelido?: string;
   nome?: string;
@@ -46,13 +47,15 @@ export interface Usuario {
   enderecos?: Endereco[];
 }
 
+// --- INTERFACE DE AVALIAÇÃO ATUALIZADA ---
+// Agora ela corresponde ao que o backend envia
 export interface Avaliacao {
   id: number;
-  usuarioId: number;
-  produtoId: number;
+  autor: string; // Tinha 'usuarioId'
+  data: string;    // Tinha 'dataAvaliacao'
   descricao: string;
-  dataAvaliacao: string;
   nota: 1 | 2 | 3 | 4 | 5;
+  produtoId?: number; // Opcional, pois a API não envia mais
 }
 
 export interface ItemCarrinho {
@@ -64,4 +67,10 @@ export interface ItemCarrinho {
 export interface MetodoPagamento {
   id?: number;
   nome: string;
+}
+
+export interface Banner {
+  id: number;
+  titulo: string;
+  imagemUrl: string;
 }

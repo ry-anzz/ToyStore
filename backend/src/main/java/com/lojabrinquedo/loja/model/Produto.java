@@ -1,5 +1,6 @@
 package com.lojabrinquedo.loja.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,8 +11,6 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 public class Produto {
-
-    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,7 +38,11 @@ public class Produto {
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
     
-    // MÉTODOS ADICIONADOS MANUALMENTE PARA CORRIGIR O ERRO DE COMPILAÇÃO:
+    // --- MÉTODO GET/SET PARA O ID QUE ESTAVA FALTANDO ---
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    // --- Outros getters e setters manuais ---
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
     public BigDecimal getValor() { return valor; }
@@ -49,6 +52,7 @@ public class Produto {
     public Integer getQuantidadeEstoque() { return quantidadeEstoque; }
     public void setQuantidadeEstoque(Integer quantidadeEstoque) { this.quantidadeEstoque = quantidadeEstoque; }
 
+    @JsonProperty("imagem_url")
     public String getImagemUrl() { return imagemUrl; }
     public void setImagemUrl(String imagemUrl) { this.imagemUrl = imagemUrl; }
 

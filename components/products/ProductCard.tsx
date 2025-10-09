@@ -1,4 +1,3 @@
-// src/components/products/ProductCard.tsx
 "use client";
 
 import Link from 'next/link';
@@ -6,24 +5,21 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Produto } from '@/types';
 import { useCart } from '@/contexts/CartContext';
-import { useFavorites } from '@/contexts/FavoritesContext'; // 1. IMPORTAMOS O CONTEXTO DE FAVORITOS
+import { useFavorites } from '@/contexts/FavoritesContext';
 import { Heart } from 'lucide-react';
 
 export function ProductCard({ product }: { product: Produto }) {
   const { adicionarAoCarrinho } = useCart();
-  // 2. PEGAMOS AS FUNÇÕES E DADOS DO CONTEXTO DE FAVORITOS
   const { toggleFavorito, isFavorito } = useFavorites();
 
   const isProductFavorite = isFavorito(product.id);
 
   return (
-    // Adicionamos 'relative' para posicionar o coração
     <Card className="flex flex-col justify-between relative group"> 
       
-      {/* 3. BOTÃO DE FAVORITAR */}
       <button
         onClick={(e) => {
-          e.preventDefault(); // Impede que o clique no coração navegue para a página do produto
+          e.preventDefault();
           toggleFavorito(product.id);
         }}
         className="absolute top-2 right-2 z-10 p-2 bg-white/70 rounded-full hover:bg-white transition-all"

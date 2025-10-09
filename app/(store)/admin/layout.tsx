@@ -1,9 +1,9 @@
-// src/app/(store)/admin/layout.tsx
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
-import { LayoutDashboard, Package, LogOut, Home, Tag } from "lucide-react"; // Adicionado o ícone Tag
+// A CORREÇÃO ESTÁ AQUI NESTA LINHA:
+import { LayoutDashboard, Package, LogOut, Home, Tag, Image as ImageIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function AdminLayout({
@@ -15,9 +15,6 @@ export default function AdminLayout({
   const pathname = usePathname();
   const router = useRouter();
 
-  
-
-  // Proteção de rota: se o usuário não for admin, redireciona
   if (!user?.administrador) {
     if (typeof window !== "undefined") {
       router.push('/');
@@ -36,19 +33,17 @@ export default function AdminLayout({
     }
   };
 
-  
-
   const navLinks = [
     { name: "Gerenciar Produtos", href: "/admin/produtos", icon: Package },
     { name: "Gerenciar Marcas", href: "/admin/marcas", icon: Package },
-    { name: "Gerenciar Categorias", href: "/admin/categorias", icon: Tag }, // NOVA LINHA AQUI
+    { name: "Gerenciar Categorias", href: "/admin/categorias", icon: Tag },
+    { name: "Gerenciar Banners", href: "/admin/banners", icon: ImageIcon }, // Agora vai funcionar
     { name: "Métodos de Pagamento", href: "/admin/metodos-pagamento", icon: Package },
     { name: "Voltar para Loja", href: "/", icon: Home },
   ];
 
   return (
     <div className="flex min-h-screen">
-      {/* Menu Lateral do Admin */}
       <aside className="w-64 bg-gray-800 text-white p-4 flex flex-col">
         <h2 className="text-2xl font-bold mb-8">Painel Admin</h2>
         <nav className="flex flex-col space-y-2">
@@ -74,7 +69,6 @@ export default function AdminLayout({
         </button>
       </aside>
 
-      {/* Conteúdo Principal */}
       <main className="flex-1 p-8 bg-gray-100">
         {children}
       </main>

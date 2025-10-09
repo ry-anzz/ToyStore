@@ -1,5 +1,7 @@
+// src/components/user/OrderItem.tsx
 import { Pedido } from "@/types";
 import { Button } from "../ui/Button";
+import Link from 'next/link'; // 1. Importar o componente Link
 
 interface OrderItemProps {
   order: Pedido;
@@ -50,7 +52,11 @@ export function OrderItem({ order }: OrderItemProps) {
             </div>
           )}
         </div>
-        <Button>Ver Detalhes</Button>
+        
+        {/* 2. AQUI ESTÁ A CORREÇÃO: O botão agora é um link */}
+        <Button asChild>
+          <Link href={`/conta/pedidos/${order.id}`}>Ver Detalhes</Link>
+        </Button>
       </div>
     </div>
   );

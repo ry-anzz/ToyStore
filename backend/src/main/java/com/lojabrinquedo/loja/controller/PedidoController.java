@@ -39,6 +39,7 @@ public class PedidoController {
     @Transactional
     @SuppressWarnings("unchecked")
     public ResponseEntity<Pedido> criarPedido(@RequestBody Map<String, Object> payload) {
+        // ... (código existente sem alterações)
         Long usuarioId = Long.parseLong(payload.get("usuarioId").toString());
         Long enderecoId = Long.parseLong(payload.get("enderecoId").toString());
         Long metodoPagamentoId = Long.parseLong(payload.get("metodoPagamentoId").toString());
@@ -95,11 +96,48 @@ public class PedidoController {
         }
         List<Pedido> pedidos = pedidoRepository.findByUsuarioIdOrderByDataPedidoDesc(usuarioId);
 
-        // Converte a lista de Pedido para uma lista de PedidoResponse
         List<PedidoResponse> pedidosResponse = pedidos.stream()
                 .map(PedidoResponse::new)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(pedidosResponse);
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<PedidoResponse>> buscarTodosPedidos() {
+        List<Pedido> pedidos = pedidoRepository.findAllByOrderByDataPedidoDesc();
+        List<PedidoResponse> pedidosResponse = pedidos.stream()
+                .map(PedidoResponse::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(pedidosResponse);
+    }
+
+    // NOVO ENDPOINT ADICIONADO
+    @GetMapping("/{id}")
+    public ResponseEntity<PedidoResponse> buscarPedidoPorId(@PathVariable Long id) {
+        return pedidoRepository.findById(id)
+                .map(pedido -> ResponseEntity.ok(new PedidoResponse(pedido)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<PedidoResponse> atualizarStatusPedido(@PathVariable Long id, @RequestBody Map<String, Long> payload) {
+        Long statusId = payload.get("statusId");
+        
+        Pedido pedido = pedidoRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado."));
+            
+        StatusPedido novoStatus = statusPedidoRepository.findById(statusId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Status de pedido não encontrado."));
+
+        pedido.setStatusPedido(novoStatus);
+        Pedido pedidoSalvo = pedidoRepository.save(pedido);
+        
+        return ResponseEntity.ok(new PedidoResponse(pedidoSalvo));
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<List<StatusPedido>> buscarTodosStatus() {
+        return ResponseEntity.ok(statusPedidoRepository.findAll());
     }
 }

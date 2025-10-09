@@ -3,7 +3,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 // A CORREÇÃO ESTÁ AQUI NESTA LINHA:
-import { LayoutDashboard, Package, LogOut, Home, Tag, Image as ImageIcon } from "lucide-react";
+import { LayoutDashboard, Package, LogOut, Home, Tag, Image as ImageIcon, ShoppingBasket } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function AdminLayout({
@@ -35,9 +35,10 @@ export default function AdminLayout({
 
   const navLinks = [
     { name: "Gerenciar Produtos", href: "/admin/produtos", icon: Package },
+    { name: "Gerenciar Pedidos", href: "/admin/pedidos", icon: ShoppingBasket },
     { name: "Gerenciar Marcas", href: "/admin/marcas", icon: Package },
     { name: "Gerenciar Categorias", href: "/admin/categorias", icon: Tag },
-    { name: "Gerenciar Banners", href: "/admin/banners", icon: ImageIcon }, // Agora vai funcionar
+    { name: "Gerenciar Banners", href: "/admin/banners", icon: ImageIcon },
     { name: "Métodos de Pagamento", href: "/admin/metodos-pagamento", icon: Package },
     { name: "Voltar para Loja", href: "/", icon: Home },
   ];

@@ -1,7 +1,9 @@
 package com.lojabrinquedo.loja.dto;
 
+import com.lojabrinquedo.loja.model.Endereco; // IMPORT ADICIONADO
 import com.lojabrinquedo.loja.model.Pedido;
 import com.lojabrinquedo.loja.model.StatusPedido;
+import com.lojabrinquedo.loja.model.Usuario;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,12 +16,16 @@ public class PedidoResponse {
     private BigDecimal valorTotal;
     private StatusPedido statusPedido;
     private List<ItemPedidoResponse> itens;
+    private UsuarioResponse usuario;
+    private Endereco endereco; // CAMPO ADICIONADO
 
     public PedidoResponse(Pedido pedido) {
         this.id = pedido.getId();
         this.dataPedido = pedido.getDataPedido();
         this.valorTotal = pedido.getValorTotal();
         this.statusPedido = pedido.getStatusPedido();
+        this.usuario = new UsuarioResponse(pedido.getUsuario());
+        this.endereco = pedido.getEndereco(); // DADO ADICIONADO
         this.itens = pedido.getItens().stream()
                 .map(ItemPedidoResponse::new)
                 .collect(Collectors.toList());
@@ -31,4 +37,23 @@ public class PedidoResponse {
     public BigDecimal getValorTotal() { return valorTotal; }
     public StatusPedido getStatusPedido() { return statusPedido; }
     public List<ItemPedidoResponse> getItens() { return itens; }
+    public UsuarioResponse getUsuario() { return usuario; }
+    public Endereco getEndereco() { return endereco; } // GETTER ADICIONADO
+
+    public static class UsuarioResponse {
+        private Long id;
+        private String nome;
+        private String email;
+
+        public UsuarioResponse(Usuario usuario) {
+            this.id = usuario.getId();
+            this.nome = usuario.getNome();
+            this.email = usuario.getEmail();
+        }
+
+        // Getters
+        public Long getId() { return id; }
+        public String getNome() { return nome; }
+        public String getEmail() { return email; }
+    }
 }

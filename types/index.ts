@@ -92,4 +92,15 @@ export interface Pedido {
     nome: string;
   };
   itens: ItemPedido[];
+  usuario: {
+    id: number;
+    nome: string;
+    email: string;
+  };
+  endereco: Endereco;
+}
+
+export interface StatusPedido {
+    id: number;
+    nome: string;
 }

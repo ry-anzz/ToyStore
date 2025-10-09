@@ -1,24 +1,38 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../ui/Button";
 import { Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Popup } from "../ui/Popup";
+import { Avaliacao } from "@/types";
 
 interface ReviewFormProps {
   produtoId: number;
   onReviewSubmit: () => void;
+  // Novas props para o modo de edição
+  initialData?: Avaliacao | null;
+  onCancel?: () => void;
 }
 
 const API_URL = 'http://localhost:8080/api';
 
-export function ReviewForm({ produtoId, onReviewSubmit }: ReviewFormProps) {
+export function ReviewForm({ produtoId, onReviewSubmit, initialData, onCancel }: ReviewFormProps) {
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [popup, setPopup] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' });
+
+  const isEditing = !!initialData; // Verifica se estamos no modo de edição
+
+  // Preenche o formulário com os dados da avaliação ao entrar no modo de edição
+  useEffect(() => {
+    if (isEditing && initialData) {
+      setRating(initialData.nota);
+      setComment(initialData.descricao);
+    }
+  }, [isEditing, initialData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,9 +45,12 @@ export function ReviewForm({ produtoId, onReviewSubmit }: ReviewFormProps) {
       return;
     }
 
+    const url = isEditing ? `${API_URL}/avaliacoes/${initialData?.id}` : `${API_URL}/avaliacoes`;
+    const method = isEditing ? 'PUT' : 'POST';
+
     try {
-      const response = await fetch(`${API_URL}/avaliacoes`, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           usuarioId: user.id,
@@ -43,11 +60,14 @@ export function ReviewForm({ produtoId, onReviewSubmit }: ReviewFormProps) {
         }),
       });
 
-      if (!response.ok) throw new Error("Falha ao enviar avaliação.");
+      if (!response.ok) throw new Error(`Falha ao ${isEditing ? 'atualizar' : 'enviar'} avaliação.`);
       
-      setPopup({ show: true, message: 'Avaliação enviada com sucesso!', type: 'success' });
-      setRating(0);
-      setComment("");
+      setPopup({ show: true, message: `Avaliação ${isEditing ? 'atualizada' : 'enviada'} com sucesso!`, type: 'success' });
+      
+      if (!isEditing) {
+        setRating(0);
+        setComment("");
+      }
       onReviewSubmit();
 
     } catch (error: any) {
@@ -59,7 +79,7 @@ export function ReviewForm({ produtoId, onReviewSubmit }: ReviewFormProps) {
     <>
      {popup.show && <Popup type={popup.type} message={popup.message} onClose={() => setPopup({ ...popup, show: false })} />}
       <div className="bg-gray-50 p-6 rounded-lg mb-8">
-        <h3 className="text-xl font-semibold mb-4">Deixe sua Avaliação</h3>
+        <h3 className="text-xl font-semibold mb-4">{isEditing ? 'Editar sua Avaliação' : 'Deixe sua Avaliação'}</h3>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <p className="font-medium mb-2">Sua nota:</p>
@@ -83,7 +103,12 @@ export function ReviewForm({ produtoId, onReviewSubmit }: ReviewFormProps) {
               placeholder="Conte o que você achou do brinquedo..."
             ></textarea>
           </div>
-          <Button type="submit">Enviar Avaliação</Button>
+          <div className="flex justify-end gap-2">
+            {isEditing && onCancel && (
+              <Button type="button" onClick={onCancel} className="bg-gray-600 hover:bg-gray-700">Cancelar</Button>
+            )}
+            <Button type="submit">{isEditing ? 'Salvar Alterações' : 'Enviar Avaliação'}</Button>
+          </div>
         </form>
       </div>
     </>

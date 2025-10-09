@@ -1,4 +1,3 @@
-// 1. ADICIONE A DECLARAÇÃO DO PACOTE NO TOPO
 package com.lojabrinquedo.loja.controller;
 
 import com.lojabrinquedo.loja.model.Avaliacao;
@@ -34,6 +33,12 @@ public class AvaliacaoController {
     public ResponseEntity<Avaliacao> criarAvaliacao(@RequestBody Map<String, Object> payload) {
         Long usuarioId = Long.parseLong(payload.get("usuarioId").toString());
         Long produtoId = Long.parseLong(payload.get("produtoId").toString());
+        
+        // VERIFICAÇÃO DE DUPLICIDADE
+        if (avaliacaoRepository.existsByUsuarioIdAndProdutoId(usuarioId, produtoId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Você já avaliou este produto.");
+        }
+
         Integer nota = Integer.parseInt(payload.get("nota").toString());
         String descricao = (String) payload.get("descricao");
 

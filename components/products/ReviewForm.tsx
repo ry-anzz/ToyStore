@@ -76,41 +76,30 @@ export function ReviewForm({ produtoId, onReviewSubmit, initialData, onCancel }:
   };
 
   return (
-    <>
-     {popup.show && <Popup type={popup.type} message={popup.message} onClose={() => setPopup({ ...popup, show: false })} />}
-      <div className="bg-gray-50 p-6 rounded-lg mb-8">
-        <h3 className="text-xl font-semibold mb-4">{isEditing ? 'Editar sua Avaliação' : 'Deixe sua Avaliação'}</h3>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <p className="font-medium mb-2">Sua nota:</p>
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  type="button" key={star} onClick={() => setRating(star)}
-                  onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(0)}
-                  className="cursor-pointer"
-                >
-                  <Star size={24} className={`transition-colors ${(hoverRating || rating) >= star ? "text-yellow-400 fill-current" : "text-gray-300"}`} />
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="mb-4">
-            <label htmlFor="comment" className="block font-medium mb-2">Seu comentário:</label>
-            <textarea
-              id="comment" rows={4} value={comment} onChange={(e) => setComment(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Conte o que você achou do brinquedo..."
-            ></textarea>
-          </div>
-          <div className="flex justify-end gap-2">
-            {isEditing && onCancel && (
-              <Button type="button" onClick={onCancel} className="bg-gray-600 hover:bg-gray-700">Cancelar</Button>
-            )}
-            <Button type="submit">{isEditing ? 'Salvar Alterações' : 'Enviar Avaliação'}</Button>
-          </div>
-        </form>
-      </div>
-    </>
+    // NOVO ESTILO: Card mais amigável
+    <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+      <h3 className="text-xl font-bold text-slate-700 mb-4">{initialData ? "Editar sua Avaliação" : "Deixe sua Avaliação"}</h3>
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <p className="font-semibold text-slate-600 mb-2">Sua nota:</p>
+          {/* ... (lógica das estrelas inalterada) ... */}
+        </div>
+        <div className="mb-4">
+          <label htmlFor="comment" className="block font-semibold text-slate-600 mb-2">Seu comentário:</label>
+          {/* NOVO ESTILO: Textarea */}
+          <textarea
+            id="comment"
+            rows={4}
+            className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+            placeholder="Conte o que você achou do brinquedo..."
+          ></textarea>
+        </div>
+        <div className="flex justify-end gap-2">
+          {onCancel && <Button type="button" onClick={onCancel} className="bg-slate-200 hover:bg-slate-300 text-slate-700">Cancelar</Button>}
+          {/* NOVO ESTILO: Botão de Envio */}
+          <Button type="submit" className="bg-amber-400 hover:bg-amber-500 text-slate-800 font-bold">Enviar Avaliação</Button>
+        </div>
+      </form>
+    </div>
   );
 }

@@ -60,3 +60,8 @@ export interface ItemCarrinho {
   produto: Produto;
   quantidade: number;
 }
+
+export interface MetodoPagamento {
+  id?: number;
+  nome: string;
+}

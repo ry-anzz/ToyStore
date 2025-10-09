@@ -1,6 +1,5 @@
 package com.lojabrinquedo.loja.model;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -8,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "pedido")
-@Data @NoArgsConstructor
+@NoArgsConstructor
 public class Pedido {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
 
@@ -26,4 +25,27 @@ public class Pedido {
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ItensPedido> itens;
+
+    //<editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+    public Endereco getEndereco() { return endereco; }
+    public void setEndereco(Endereco endereco) { this.endereco = endereco; }
+    public StatusPedido getStatusPedido() { return statusPedido; }
+    public void setStatusPedido(StatusPedido statusPedido) { this.statusPedido = statusPedido; }
+    public MetodoPagamento getMetodoPagamento() { return metodoPagamento; }
+    public void setMetodoPagamento(MetodoPagamento metodoPagamento) { this.metodoPagamento = metodoPagamento; }
+    public LocalDateTime getDataPedido() { return dataPedido; }
+    public void setDataPedido(LocalDateTime dataPedido) { this.dataPedido = dataPedido; }
+    public BigDecimal getValorFrete() { return valorFrete; }
+    public void setValorFrete(BigDecimal valorFrete) { this.valorFrete = valorFrete; }
+    public BigDecimal getValorTotal() { return valorTotal; }
+    public void setValorTotal(BigDecimal valorTotal) { this.valorTotal = valorTotal; }
+    public Integer getQuantidadeParcelas() { return quantidadeParcelas; }
+    public void setQuantidadeParcelas(Integer quantidadeParcelas) { this.quantidadeParcelas = quantidadeParcelas; }
+    public List<ItensPedido> getItens() { return itens; }
+    public void setItens(List<ItensPedido> itens) { this.itens = itens; }
+    //</editor-fold>
 }

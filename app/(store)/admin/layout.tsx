@@ -39,7 +39,6 @@ export default function AdminLayout({
     { name: "Gerenciar Marcas", href: "/admin/marcas", icon: Package },
     { name: "Gerenciar Categorias", href: "/admin/categorias", icon: Tag },
     { name: "Gerenciar Banners", href: "/admin/banners", icon: ImageIcon },
-    { name: "Métodos de Pagamento", href: "/admin/metodos-pagamento", icon: Package },
     { name: "Voltar para Loja", href: "/", icon: Home },
   ];
 

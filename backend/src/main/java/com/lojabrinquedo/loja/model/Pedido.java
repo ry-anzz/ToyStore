@@ -1,4 +1,5 @@
 package com.lojabrinquedo.loja.model;
+import com.fasterxml.jackson.annotation.JsonManagedReference; // IMPORTAR
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ public class Pedido {
     @Column(name = "quantidade_parcelas", columnDefinition = "INT DEFAULT 1") private Integer quantidadeParcelas = 1;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference // ADICIONAR ESTA ANOTAÇÃO
     private List<ItensPedido> itens;
 
     //<editor-fold defaultstate="collapsed" desc="Getters and Setters">

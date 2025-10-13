@@ -83,24 +83,16 @@ export interface ItemPedido {
   produto: Pick<Produto, 'id' | 'nome' | 'imagens'>;
 }
 
+export interface StatusPedido {
+  id: number;
+  nome: string;
+}
+
 export interface Pedido {
   id: number;
   dataPedido: string;
   valorTotal: number;
-  statusPedido: {
-    id: number;
-    nome: string;
-  };
+  statusPedido: StatusPedido;
   itens: ItemPedido[];
-  usuario: {
-    id: number;
-    nome: string;
-    email: string;
-  };
-  endereco: Endereco;
-}
-
-export interface StatusPedido {
-    id: number;
-    nome: string;
+  nomeCliente?: string; // NOVO
 }

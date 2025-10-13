@@ -38,8 +38,7 @@ public class PedidoController {
     @PostMapping
     @Transactional
     @SuppressWarnings("unchecked")
-    public ResponseEntity<Pedido> criarPedido(@RequestBody Map<String, Object> payload) {
-        // ... (código existente sem alterações)
+    public ResponseEntity<PedidoResponse> criarPedido(@RequestBody Map<String, Object> payload) {
         Long usuarioId = Long.parseLong(payload.get("usuarioId").toString());
         Long enderecoId = Long.parseLong(payload.get("enderecoId").toString());
         Long metodoPagamentoId = Long.parseLong(payload.get("metodoPagamentoId").toString());
@@ -86,23 +85,11 @@ public class PedidoController {
         novoPedido.setValorFrete(BigDecimal.ZERO);
 
         Pedido pedidoSalvo = pedidoRepository.save(novoPedido);
-        return new ResponseEntity<>(pedidoSalvo, HttpStatus.CREATED);
+
+        return new ResponseEntity<>(new PedidoResponse(pedidoSalvo), HttpStatus.CREATED);
     }
 
-    @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<PedidoResponse>> buscarPedidosPorUsuario(@PathVariable Long usuarioId) {
-        if (!usuarioRepository.existsById(usuarioId)) {
-            return ResponseEntity.notFound().build();
-        }
-        List<Pedido> pedidos = pedidoRepository.findByUsuarioIdOrderByDataPedidoDesc(usuarioId);
-
-        List<PedidoResponse> pedidosResponse = pedidos.stream()
-                .map(PedidoResponse::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(pedidosResponse);
-    }
-    
+    // ENDPOINT PARA O ADMIN BUSCAR TODOS OS PEDIDOS
     @GetMapping
     public ResponseEntity<List<PedidoResponse>> buscarTodosPedidos() {
         List<Pedido> pedidos = pedidoRepository.findAllByOrderByDataPedidoDesc();
@@ -112,32 +99,35 @@ public class PedidoController {
         return ResponseEntity.ok(pedidosResponse);
     }
 
-    // NOVO ENDPOINT ADICIONADO
-    @GetMapping("/{id}")
-    public ResponseEntity<PedidoResponse> buscarPedidoPorId(@PathVariable Long id) {
-        return pedidoRepository.findById(id)
-                .map(pedido -> ResponseEntity.ok(new PedidoResponse(pedido)))
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<List<PedidoResponse>> buscarPedidosPorUsuario(@PathVariable Long usuarioId) {
+        if (!usuarioRepository.existsById(usuarioId)) {
+            return ResponseEntity.notFound().build();
+        }
+        List<Pedido> pedidos = pedidoRepository.findByUsuarioIdOrderByDataPedidoDesc(usuarioId);
+        List<PedidoResponse> pedidosResponse = pedidos.stream()
+                .map(PedidoResponse::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(pedidosResponse);
     }
 
+    // ENDPOINT PARA O ADMIN ATUALIZAR O STATUS DE UM PEDIDO
     @PutMapping("/{id}/status")
     public ResponseEntity<PedidoResponse> atualizarStatusPedido(@PathVariable Long id, @RequestBody Map<String, Long> payload) {
         Long statusId = payload.get("statusId");
-        
+        if (statusId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID do status é obrigatório.");
+        }
+
         Pedido pedido = pedidoRepository.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado."));
-            
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido não encontrado."));
+        
         StatusPedido novoStatus = statusPedidoRepository.findById(statusId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Status de pedido não encontrado."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Status de pedido não encontrado."));
 
         pedido.setStatusPedido(novoStatus);
-        Pedido pedidoSalvo = pedidoRepository.save(pedido);
-        
-        return ResponseEntity.ok(new PedidoResponse(pedidoSalvo));
-    }
+        Pedido pedidoAtualizado = pedidoRepository.save(pedido);
 
-    @GetMapping("/status")
-    public ResponseEntity<List<StatusPedido>> buscarTodosStatus() {
-        return ResponseEntity.ok(statusPedidoRepository.findAll());
+        return ResponseEntity.ok(new PedidoResponse(pedidoAtualizado));
     }
 }

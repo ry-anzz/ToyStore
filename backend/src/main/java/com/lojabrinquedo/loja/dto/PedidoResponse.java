@@ -1,5 +1,7 @@
 package com.lojabrinquedo.loja.dto;
 
+import com.lojabrinquedo.loja.model.Endereco;
+import com.lojabrinquedo.loja.model.MetodoPagamento; // IMPORT ADICIONADO
 import com.lojabrinquedo.loja.model.Pedido;
 import com.lojabrinquedo.loja.model.StatusPedido;
 
@@ -14,14 +16,18 @@ public class PedidoResponse {
     private BigDecimal valorTotal;
     private StatusPedido statusPedido;
     private List<ItemPedidoResponse> itens;
-    private String nomeCliente; // NOVO CAMPO
+    private String nomeCliente;
+    private Endereco endereco;
+    private MetodoPagamento metodoPagamento; 
 
     public PedidoResponse(Pedido pedido) {
         this.id = pedido.getId();
         this.dataPedido = pedido.getDataPedido();
         this.valorTotal = pedido.getValorTotal();
         this.statusPedido = pedido.getStatusPedido();
-        this.nomeCliente = pedido.getUsuario().getNome(); // ATRIBUIR NOME DO CLIENTE
+        this.nomeCliente = pedido.getUsuario().getNome();
+        this.endereco = pedido.getEndereco();
+        this.metodoPagamento = pedido.getMetodoPagamento(); 
         this.itens = pedido.getItens().stream()
                 .map(ItemPedidoResponse::new)
                 .collect(Collectors.toList());
@@ -33,5 +39,7 @@ public class PedidoResponse {
     public BigDecimal getValorTotal() { return valorTotal; }
     public StatusPedido getStatusPedido() { return statusPedido; }
     public List<ItemPedidoResponse> getItens() { return itens; }
-    public String getNomeCliente() { return nomeCliente; } // GETTER PARA O NOVO CAMPO
+    public String getNomeCliente() { return nomeCliente; }
+    public Endereco getEndereco() { return endereco; }
+    public MetodoPagamento getMetodoPagamento() { return metodoPagamento; } 
 }

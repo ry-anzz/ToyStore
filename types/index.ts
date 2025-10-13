@@ -94,5 +94,7 @@ export interface Pedido {
   valorTotal: number;
   statusPedido: StatusPedido;
   itens: ItemPedido[];
-  nomeCliente?: string; // NOVO
+  nomeCliente?: string;
+  endereco: Endereco; 
+  metodoPagamento: MetodoPagamento;
 }

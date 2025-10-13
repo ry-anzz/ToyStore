@@ -89,7 +89,6 @@ public class PedidoController {
         return new ResponseEntity<>(new PedidoResponse(pedidoSalvo), HttpStatus.CREATED);
     }
 
-    // ENDPOINT PARA O ADMIN BUSCAR TODOS OS PEDIDOS
     @GetMapping
     public ResponseEntity<List<PedidoResponse>> buscarTodosPedidos() {
         List<Pedido> pedidos = pedidoRepository.findAllByOrderByDataPedidoDesc();
@@ -97,6 +96,14 @@ public class PedidoController {
                 .map(PedidoResponse::new)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(pedidosResponse);
+    }
+
+    // NOVO ENDPOINT PARA BUSCAR UM PEDIDO POR ID
+    @GetMapping("/{id}")
+    public ResponseEntity<PedidoResponse> buscarPedidoPorId(@PathVariable Long id) {
+        return pedidoRepository.findById(id)
+                .map(pedido -> ResponseEntity.ok(new PedidoResponse(pedido)))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/usuario/{usuarioId}")
@@ -111,7 +118,6 @@ public class PedidoController {
         return ResponseEntity.ok(pedidosResponse);
     }
 
-    // ENDPOINT PARA O ADMIN ATUALIZAR O STATUS DE UM PEDIDO
     @PutMapping("/{id}/status")
     public ResponseEntity<PedidoResponse> atualizarStatusPedido(@PathVariable Long id, @RequestBody Map<String, Long> payload) {
         Long statusId = payload.get("statusId");

@@ -62,7 +62,6 @@ export default function OrderDetailsPage() {
 
   const subtotal = pedido.itens.reduce((acc, item) => acc + item.precoUnitario * item.quantidade, 0);
 
-  // ALTERAÇÃO AQUI: Trocado para toLocaleString para incluir o horário
   const formattedDate = new Date(pedido.dataPedido).toLocaleString('pt-BR', {
     day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
   });
@@ -78,7 +77,6 @@ export default function OrderDetailsPage() {
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-4 border-b">
           <div>
             <h1 className="text-2xl font-bold">Detalhes do Pedido #{pedido.id.toString().padStart(6, '0')}</h1>
-            {/* ALTERAÇÃO AQUI: Adicionado "às" para melhor formatação */}
             <p className="text-sm text-gray-500">
               Realizado em: {formattedDate.replace(' ', ' às ')}h
             </p>
@@ -133,6 +131,11 @@ export default function OrderDetailsPage() {
               <div className="flex justify-between text-gray-600">
                 <span>Frete</span>
                 <span className="text-green-600 font-semibold">Grátis</span>
+              </div>
+              {/* SEÇÃO DE PAGAMENTO ADICIONADA */}
+              <div className="flex justify-between text-gray-600">
+                <span>Pagamento</span>
+                <span className="font-semibold">{pedido.metodoPagamento.nome}</span>
               </div>
               <div className="flex justify-between font-bold text-xl mt-4 pt-4 border-t">
                 <span>Total</span>

@@ -28,10 +28,16 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [popup, setPopup] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' });
 
-  // Estado para armazenar os métodos de pagamento vindos da API
+  // NOVO ESTADO PARA OS DADOS DO CARTÃO
+  const [cardData, setCardData] = useState({
+    number: '',
+    name: '',
+    expiry: '',
+    cvv: '',
+  });
+
   const [metodosPagamentoApi, setMetodosPagamentoApi] = useState<MetodoPagamento[]>([]);
 
-  // Busca os métodos de pagamento da API quando o componente é montado
   useEffect(() => {
     const fetchMetodosPagamento = async () => {
       try {
@@ -49,6 +55,34 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
     };
     fetchMetodosPagamento();
   }, []);
+
+  // NOVAS FUNÇÕES PARA AS MÁSCARAS DO CARTÃO
+  const handleCardInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let { id, value } = e.target;
+
+    if (id === 'number') {
+      value = value.replace(/\D/g, ''); // Remove tudo que não for dígito
+      value = value.replace(/(\d{4})(?=\d)/g, '$1 '); // Adiciona espaço a cada 4 dígitos
+      value = value.substring(0, 19); // Limita o tamanho (16 dígitos + 3 espaços)
+    }
+
+    if (id === 'expiry') {
+      value = value.replace(/\D/g, '');
+      value = value.replace(/(\d{2})(\d)/, '$1/$2');
+      value = value.substring(0, 5);
+    }
+
+    if (id === 'cvv') {
+      value = value.replace(/\D/g, '').substring(0, 3);
+    }
+    
+    if (id === 'name') {
+      value = value.replace(/[^a-zA-Z\s]/g, '');
+    }
+
+    setCardData(prev => ({ ...prev, [id]: value }));
+  };
+
 
   const handleGeneratePixKey = () => {
     const randomKey = crypto.randomUUID();
@@ -72,7 +106,6 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
   }
 
   const handleFinalize = async () => {
-    // Validações iniciais
     if (!paymentMethod) {
       setPopup({ show: true, message: 'Selecione um método de pagamento para finalizar o pedido.', type: 'error'});
       return;
@@ -82,7 +115,6 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
       return;
     }
 
-    // Validações específicas do Pix
     if (paymentMethod === 'pix') {
       if (!pixKey) {
         setPopup({ show: true, message: 'Você precisa gerar a chave Pix antes de finalizar.', type: 'error'});
@@ -96,7 +128,6 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
     
     setIsLoading(true);
 
-    // Lógica corrigida para encontrar o ID dinamicamente
     const nomeMetodo = paymentMethod === 'cartao' ? 'Cartão de Crédito' : 'Pix';
     const metodoSelecionado = metodosPagamentoApi.find(m => m.nome.toLowerCase() === nomeMetodo.toLowerCase());
 
@@ -106,7 +137,6 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
       return;
     }
     
-    // Monta o objeto do pedido com o ID correto
     const pedidoData = {
       usuarioId: user.id,
       enderecoId: selectedAddressId,
@@ -171,11 +201,12 @@ export function PaymentStep({ onBack, selectedAddressId }: PaymentStepProps) {
         <div className="min-h-[180px] flex flex-col justify-center">
           {paymentMethod === 'cartao' && (
             <div className="space-y-4 animate-fade-in-up">
-              <div><label htmlFor="cardNumber">Número do Cartão</label><Input id="cardNumber" placeholder="0000 0000 0000 0000" /></div>
-              <div><label htmlFor="cardName">Nome no Cartão</label><Input id="cardName" placeholder="Nome como no cartão" /></div>
+              {/* INPUTS ATUALIZADOS PARA USAR O ESTADO E AS FUNÇÕES DE MÁSCARA */}
+              <div><label htmlFor="number">Número do Cartão</label><Input id="number" placeholder="0000 0000 0000 0000" value={cardData.number} onChange={handleCardInputChange} /></div>
+              <div><label htmlFor="name">Nome no Cartão</label><Input id="name" placeholder="Nome como no cartão" value={cardData.name} onChange={handleCardInputChange} /></div>
               <div className="flex gap-4">
-                <div className="flex-1"><label htmlFor="expiryDate">Validade</label><Input id="expiryDate" placeholder="MM/AA" /></div>
-                <div className="flex-1"><label htmlFor="cvv">CVV</label><Input id="cvv" placeholder="123" /></div>
+                <div className="flex-1"><label htmlFor="expiry">Validade</label><Input id="expiry" placeholder="MM/AA" value={cardData.expiry} onChange={handleCardInputChange} /></div>
+                <div className="flex-1"><label htmlFor="cvv">CVV</label><Input id="cvv" placeholder="123" value={cardData.cvv} onChange={handleCardInputChange} /></div>
               </div>
             </div>
           )}

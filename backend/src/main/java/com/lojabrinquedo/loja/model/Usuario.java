@@ -1,6 +1,6 @@
 package com.lojabrinquedo.loja.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference; // 1. MUDANÇA NA IMPORTAÇÃO
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.NoArgsConstructor;
 import java.util.List;
@@ -20,7 +20,6 @@ public class Usuario {
     private String senha;
     private Boolean administrador = false;
 
-    // 2. CORREÇÃO DA ANOTAÇÃO
     @JsonManagedReference
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Endereco> enderecos;
@@ -28,7 +27,8 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CarrinhoItens> itensCarrinho;
     
-    // Getters e Setters manuais...
+    // --- GETTERS E SETTERS MANUAIS ---
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNome() { return nome; }
@@ -43,8 +43,19 @@ public class Usuario {
     public void setSenha(String senha) { this.senha = senha; }
     public Boolean getAdministrador() { return administrador; }
     public void setAdministrador(Boolean administrador) { this.administrador = administrador; }
-    public List<Endereco> getEnderecos() { return enderecos; }
-    public void setEnderecos(List<Endereco> enderecos) { this.enderecos = enderecos; }
     public List<CarrinhoItens> getItensCarrinho() { return itensCarrinho; }
     public void setItensCarrinho(List<CarrinhoItens> itensCarrinho) { this.itensCarrinho = itensCarrinho; }
+
+    // --- LÓGICA DE RELACIONAMENTO ATUALIZADA ---
+    public List<Endereco> getEnderecos() { return enderecos; }
+    public void setEnderecos(List<Endereco> enderecos) {
+        // Itera sobre a nova lista de endereços
+        if (enderecos != null) {
+            for (Endereco endereco : enderecos) {
+                // Define este usuário como o "pai" de cada endereço
+                endereco.setUsuario(this);
+            }
+        }
+        this.enderecos = enderecos;
+    }
 }

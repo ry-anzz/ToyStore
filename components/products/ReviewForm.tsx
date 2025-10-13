@@ -10,7 +10,6 @@ import { Avaliacao } from "@/types";
 interface ReviewFormProps {
   produtoId: number;
   onReviewSubmit: () => void;
-  // Novas props para o modo de edição
   initialData?: Avaliacao | null;
   onCancel?: () => void;
 }
@@ -24,9 +23,8 @@ export function ReviewForm({ produtoId, onReviewSubmit, initialData, onCancel }:
   const [comment, setComment] = useState("");
   const [popup, setPopup] = useState({ show: false, message: '', type: 'success' as 'success' | 'error' });
 
-  const isEditing = !!initialData; // Verifica se estamos no modo de edição
+  const isEditing = !!initialData;
 
-  // Preenche o formulário com os dados da avaliação ao entrar no modo de edição
   useEffect(() => {
     if (isEditing && initialData) {
       setRating(initialData.nota);
@@ -76,27 +74,50 @@ export function ReviewForm({ produtoId, onReviewSubmit, initialData, onCancel }:
   };
 
   return (
-    // NOVO ESTILO: Card mais amigável
     <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
       <h3 className="text-xl font-bold text-slate-700 mb-4">{initialData ? "Editar sua Avaliação" : "Deixe sua Avaliação"}</h3>
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <p className="font-semibold text-slate-600 mb-2">Sua nota:</p>
-          {/* ... (lógica das estrelas inalterada) ... */}
+          {/* --- CÓDIGO DAS ESTRELAS RESTAURADO AQUI --- */}
+          <div className="flex items-center gap-1">
+            {[...Array(5)].map((_, index) => {
+              const starValue = index + 1;
+              return (
+                <button
+                  type="button"
+                  key={starValue}
+                  onClick={() => setRating(starValue)}
+                  onMouseEnter={() => setHoverRating(starValue)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  className="cursor-pointer"
+                >
+                  <Star
+                    size={24}
+                    className={`transition-colors ${
+                      starValue <= (hoverRating || rating)
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
         </div>
         <div className="mb-4">
           <label htmlFor="comment" className="block font-semibold text-slate-600 mb-2">Seu comentário:</label>
-          {/* NOVO ESTILO: Textarea */}
           <textarea
             id="comment"
             rows={4}
+            value={comment} // Adicionado para controlar o valor
+            onChange={(e) => setComment(e.target.value)} // Adicionado para atualizar o estado
             className="w-full p-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
             placeholder="Conte o que você achou do brinquedo..."
           ></textarea>
         </div>
         <div className="flex justify-end gap-2">
           {onCancel && <Button type="button" onClick={onCancel} className="bg-slate-200 hover:bg-slate-300 text-slate-700">Cancelar</Button>}
-          {/* NOVO ESTILO: Botão de Envio */}
           <Button type="submit" className="bg-amber-400 hover:bg-amber-500 text-slate-800 font-bold">Enviar Avaliação</Button>
         </div>
       </form>

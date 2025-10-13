@@ -7,11 +7,10 @@ import { Popup } from "@/components/ui/Popup";
 import Link from "next/link";
 import { Blocks } from "lucide-react"; 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useCallback } from 'react'; // 1. IMPORTAR useCallback
 
 const API_URL = 'http://localhost:8080/api';
 
-// Lista de estados adicionada aqui também
 const estadosBrasileiros = [
   { sigla: 'AC', nome: 'Acre' }, { sigla: 'AL', nome: 'Alagoas' },
   { sigla: 'AP', nome: 'Amapá' }, { sigla: 'AM', nome: 'Amazonas' },
@@ -38,19 +37,52 @@ export default function CadastroPage() {
   });
   const [popup, setPopup] = useState({ show: false, type: 'success' as 'success' | 'error', message: '' });
 
+  // 2. FUNÇÃO PARA BUSCAR O ENDEREÇO PELO CEP
+  const fetchAddress = useCallback(async (cep: string) => {
+    const cepNumerico = cep.replace(/\D/g, '');
+    if (cepNumerico.length !== 8) return;
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cepNumerico}/json/`);
+      const data = await response.json();
+      if (data.erro) {
+        setPopup({ show: true, type: 'error', message: 'CEP não encontrado.' });
+        return;
+      }
+      
+      // Preenche os campos do formulário com os dados da API
+      setFormData(prev => ({
+        ...prev,
+        rua: data.logradouro,
+        bairro: data.bairro,
+        cidade: data.localidade,
+        uf: data.uf,
+      }));
+
+    } catch (error) {
+      setPopup({ show: true, type: 'error', message: 'Não foi possível buscar o CEP.' });
+    }
+  }, []);
+
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
     
     let maskedValue = value;
     if (id === 'cpf') maskedValue = maskCpf(value);
-    else if (id === 'cep') maskedValue = maskCep(value);
     else if (id === 'ddd') maskedValue = value.replace(/\D/g, '').substring(0, 2);
     else if (id === 'telefone') maskedValue = maskTelefone(value);
+    else if (id === 'cep') {
+        maskedValue = maskCep(value);
+        // 3. CHAMA A FUNÇÃO DE BUSCA QUANDO O CEP ESTIVER COMPLETO
+        if (maskedValue.replace(/\D/g, '').length === 8) {
+          fetchAddress(maskedValue);
+        }
+    }
 
     setFormData(prev => ({ ...prev, [id]: maskedValue }));
   };
   
-  // Funções de máscara permanecem as mesmas
   const maskCpf = (v:string) => { v=v.replace(/\D/g,"");v=v.replace(/(\d{3})(\d)/,"$1.$2");v=v.replace(/(\d{3})(\d)/,"$1.$2");v=v.replace(/(\d{3})(\d{1,2})$/,"$1-$2");return v.substring(0,14) };
   const maskTelefone = (v:string) => { v=v.replace(/\D/g,"");v=v.replace(/(\d{5})(\d)/,"$1-$2");return v.substring(0,10) };
   const maskCep = (v:string) => { v=v.replace(/\D/g,"");v=v.replace(/(\d{5})(\d)/,"$1-$2");return v.substring(0,9) };
@@ -136,7 +168,6 @@ export default function CadastroPage() {
               <div className="sm:w-2/3"><label htmlFor="cidade">Cidade</label><Input id="cidade" value={formData.cidade} onChange={handleInputChange} required className="mt-1 w-full"/></div>
               <div className="sm:w-1/3">
                 <label htmlFor="uf">UF</label>
-                {/* COMBO BOX DE ESTADOS ADICIONADO AQUI */}
                 <select id="uf" name="uf" value={formData.uf} onChange={handleInputChange} required
                   className="w-full mt-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
                   <option value="" disabled>Selecione</option>
